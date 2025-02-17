@@ -1,14 +1,12 @@
 import puppeteer from "puppeteer";
 
 interface TeeTime {
-  date: string;
-  time: string;
-  status: string;
+  date: Date;
+  courseName: string;
   openSlots: string;
 }
 
 interface CourseData {
-  courseName: string;
   teeTimes: TeeTime[];
 }
 
@@ -67,29 +65,33 @@ export async function GET(request: Request) {
       const teeTimes: TeeTime[] = [];
 
       for (const row of teeTimeRows) {
+
         // Extract each cell's data for the tee time
-        const date = await row.$eval(
+        let day = await row.$eval(
           'td[data-title="Date"]',
-          (el) => el.textContent?.trim() || ""
+          (el) => el.textContent
         );
-        const time = await row.$eval(
+        if (!day) throw new Error("Couldn't scrape date value");
+        day = day.trim();
+        
+        let time = await row.$eval(
           'td[data-title="Time"]',
-          (el) => el.textContent?.trim() || ""
+          (el) => el.textContent
         );
-        const status = await row.$eval(
-          'td[data-title="Status"] .itemstatus',
-          (el) => el.textContent?.trim() || ""
-        );
+        if (!time) throw new Error("Couldn't scrape time value");
+        time = time.trim();
+
+        const date = new Date(`${day} ${time}`);
+
         const openSlots = await row.$eval(
           'td[data-title="Open Slots"]',
           (el) => el.textContent?.trim() || ""
         );
 
-        teeTimes.push({ date, time, status, openSlots });
+        teeTimes.push({ date, openSlots, courseName });
       }
 
       teeTimesData.push({
-        courseName,
         teeTimes,
       });
     }
