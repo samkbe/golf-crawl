@@ -33,7 +33,7 @@ export async function scrapeGolfAtx(targetDate: Date) {
     
         const bookingUrl = `https://txaustinweb.myvscloud.com/webtrac/web/search.html?Action=Start&begindate=${encodeURIComponent(
           formattedDate
-        )}&begintime=07:00+am&numberofplayers=4&numberofholes=18&_csrf_token=${csrfToken}&module=GR`;
+        )}&begintime=07:00+am&numberofplayers=1&numberofholes=18&_csrf_token=${csrfToken}&module=GR`;
     
         // Step 3: Navigate to the booking page URL
         await page.goto(bookingUrl);
