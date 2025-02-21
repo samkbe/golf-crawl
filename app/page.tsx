@@ -14,7 +14,7 @@ export default function Home() {
     {
       title: "All",
       value: "all",
-      checked: false
+      checked: true
     },
     {
       title: "Crystal Falls",
@@ -29,35 +29,54 @@ export default function Home() {
   ]);
 
   function handleRadioChange(val: string) {
-      if (val === "all") {
-        setSelected((prev) => {
-          return prev.map((course) => {
-            return {
-              ...course,
-              checked: course.value === "all" ? true : false
-            }
-          })
-        })
-      } else {
-        setSelected((prev) => {
-          return prev.map((course) => {
 
-            if (course.value === val) {
-              return {
-                ...course,
-                checked: true
-              }
-            } else if (course.value === "all") {
-              return {
-                ...course,
-                checked: false
-              }
-            } else {
-              return course;
-            }
-          })
-        })
-      }
+    setSelected((prev) => 
+      prev.map((course) => {
+        if (val === "all") {
+          return { ...course, checked: course.value === "all" };
+        }
+  
+        if (course.value === val) {
+          return { ...course, checked: !course.checked };
+        }
+  
+        if (course.value === "all") {
+          return { ...course, checked: false };
+        }
+
+        return course;
+      })
+    )
+
+      // if (val === "all") {
+      //   setSelected((prev) => {
+      //     return prev.map((course) => {
+      //       return {
+      //         ...course,
+      //         checked: course.value === "all" ? true : false
+      //       }
+      //     })
+      //   })
+      // } else {
+      //   setSelected((prev) => {
+      //     return prev.map((course) => {
+
+      //       if (course.value === val) {
+      //         return {
+      //           ...course,
+      //           checked: true
+      //         }
+      //       } else if (course.value === "all") {
+      //         return {
+      //           ...course,
+      //           checked: false
+      //         }
+      //       } else {
+      //         return course;
+      //       }
+      //     })
+      //   })
+      // }
   }
 
   return (
@@ -71,7 +90,7 @@ export default function Home() {
               return (
                 <div key={value}>
                   <label htmlFor={value}>{title}</label>
-                  <input checked={checked} id={value} type="radio" value={value} onChange={(e) => handleRadioChange( e.target.value )} />
+                  <input checked={checked} id={value} type="checkbox" value={value} onChange={(e) => handleRadioChange( e.target.value )} />
                 </div>
               )
             })
