@@ -6,7 +6,7 @@ export async function fetchTeeTimes(
     prevState: FetchTeeTimesState,
     formData: FormData,
 ) : Promise<FetchTeeTimesState> {
-
+    console.log(formData.entries());
     const dateString = formData.get("date");
     if (!dateString || typeof dateString !== 'string') return { ...prevState, error: "Date is required" };
 

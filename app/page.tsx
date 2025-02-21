@@ -1,6 +1,7 @@
 'use client';
 import { fetchTeeTimes } from "./actions";
 import { useActionState } from "react";
+import { useState } from "react";
 
 export default function Home() {
   const [state, formAction, pending] = useActionState(fetchTeeTimes, { 
@@ -9,12 +10,73 @@ export default function Home() {
     isLoading: false,
   });
 
+  const [ selected, setSelected ] = useState([
+    {
+      title: "All",
+      value: "all",
+      checked: false
+    },
+    {
+      title: "Crystal Falls",
+      value: "crystalFalls",
+      checked: false
+    },
+    {
+      title: "Shadow Glen",
+      value: "shadowGlen",
+      checked: false
+    }
+  ]);
+
+  function handleRadioChange(val: string) {
+      if (val === "all") {
+        setSelected((prev) => {
+          return prev.map((course) => {
+            return {
+              ...course,
+              checked: course.value === "all" ? true : false
+            }
+          })
+        })
+      } else {
+        setSelected((prev) => {
+          return prev.map((course) => {
+
+            if (course.value === val) {
+              return {
+                ...course,
+                checked: true
+              }
+            } else if (course.value === "all") {
+              return {
+                ...course,
+                checked: false
+              }
+            } else {
+              return course;
+            }
+          })
+        })
+      }
+  }
+
   return (
     <div>
       <form action={formAction}>
         <label htmlFor="date">Date:</label>
         <input id="date" name="date" type="date" required />
-
+        <fieldset>
+          {
+            selected.map(({ title, value, checked }) => {
+              return (
+                <div key={value}>
+                  <label htmlFor={value}>{title}</label>
+                  <input checked={checked} id={value} type="radio" value={value} onChange={(e) => handleRadioChange( e.target.value )} />
+                </div>
+              )
+            })
+          }
+        </fieldset>
         <button disabled={pending} type="submit">{pending ? "Fetching Tee Times..." : "Find Tee Times"}</button>
       </form>
       {pending ?
@@ -36,7 +98,6 @@ export default function Home() {
     </div>
   );
 }
-
 
 function formatDate(date: Date) : string {
   return new Intl.DateTimeFormat("en-US", {
