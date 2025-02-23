@@ -5,17 +5,12 @@ import { useState } from "react";
 
 export default function Home() {
   const [state, formAction, pending] = useActionState(fetchTeeTimes, { 
-    teeTimes: [], 
+    teeTimes: [],
     error: "",
     isLoading: false,
   });
 
-  const [ selected, setSelected ] = useState([
-    {
-      title: "All",
-      value: "all",
-      checked: true
-    },
+  const courses = [
     {
       title: "Crystal Falls",
       value: "crystalFalls",
@@ -26,71 +21,24 @@ export default function Home() {
       value: "shadowGlen",
       checked: false
     }
-  ]);
+  ];
 
-  function handleRadioChange(val: string) {
-
-    setSelected((prev) => 
-      prev.map((course) => {
-        if (val === "all") {
-          return { ...course, checked: course.value === "all" };
-        }
-  
-        if (course.value === val) {
-          return { ...course, checked: !course.checked };
-        }
-  
-        if (course.value === "all") {
-          return { ...course, checked: false };
-        }
-
-        return course;
-      })
-    )
-
-      // if (val === "all") {
-      //   setSelected((prev) => {
-      //     return prev.map((course) => {
-      //       return {
-      //         ...course,
-      //         checked: course.value === "all" ? true : false
-      //       }
-      //     })
-      //   })
-      // } else {
-      //   setSelected((prev) => {
-      //     return prev.map((course) => {
-
-      //       if (course.value === val) {
-      //         return {
-      //           ...course,
-      //           checked: true
-      //         }
-      //       } else if (course.value === "all") {
-      //         return {
-      //           ...course,
-      //           checked: false
-      //         }
-      //       } else {
-      //         return course;
-      //       }
-      //     })
-      //   })
-      // }
-  }
+  const [ allSelected, setAllSelected ] = useState(false);
 
   return (
     <div>
       <form action={formAction}>
         <label htmlFor="date">Date:</label>
         <input id="date" name="date" type="date" required />
-        <fieldset>
+        <label htmlFor="all">All Courses</label>
+        <input id="all" type="checkbox" name="all" onChange={(e) => setAllSelected(e.target.checked)}/>
+        <fieldset disabled={allSelected} className={ allSelected ? "opacity-25" : "" }>
           {
-            selected.map(({ title, value, checked }) => {
+            courses.map(({ title, value }) => {
               return (
                 <div key={value}>
                   <label htmlFor={value}>{title}</label>
-                  <input checked={checked} id={value} type="checkbox" value={value} onChange={(e) => handleRadioChange( e.target.value )} />
+                  <input id={value} type="checkbox" value={value} name="courses" />
                 </div>
               )
             })
