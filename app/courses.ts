@@ -1,6 +1,7 @@
 import { scrapeCrystalFalls } from "./scrape/crystal-falls";
+import { scrapeShadowGlen } from "./scrape/shadow-glen";
 
 export const courses = [
     { title: "Crystal Falls", key: "crystalFalls", fetchFunction: scrapeCrystalFalls },
-    // { name: "Shadow Glen", value: "shadowGlen", fetchFunction: fetchShadowGlen },
-  ];
+    { title: "Shadowglen", key: "shadowGlen", fetchFunction: scrapeShadowGlen },
+];

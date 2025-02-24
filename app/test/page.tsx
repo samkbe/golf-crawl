@@ -5,18 +5,13 @@ import { TeeTime } from "../types";
 export default function Page() {
     const [state, setState] = useState<TeeTime[] | undefined>(undefined);
 
-    // useEffect(() => {
-
-    //     fetchIt();
-    // }, []);
-
     async function fetchIt() {
-    const response = await fetch("/api");
-    if (response.ok) {
-        const val = await response.json();
-        setState(val);
+        const response = await fetch("/api");
+        if (response.ok) {
+            const val = await response.json();
+            setState(val);
+        }
     }
-}
 
     return (
         <div>
