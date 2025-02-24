@@ -2,6 +2,7 @@ import puppeteer from "puppeteer";
 import type { TeeTime } from "../types";
 
 export async function scrapeCrystalFalls(date: Date) {
+    console.log("CF INVOKED");
     try {
         const browser = await puppeteer.launch({ headless: true });
         const page = await browser.newPage();
@@ -10,10 +11,14 @@ export async function scrapeCrystalFalls(date: Date) {
 
         await page.goto(`https://crystal-falls-golf-club-2.book.teeitup.com/?course=5741&date=${formattedDate}&max=9999`);
 
+        const bookingPanelSelector = 'div[role="group"]:has(> div button[data-testid="teetimes_book_now_button"], > div button[data-testid="teetimes_choose_rate_button"])';
+
+        await page.waitForSelector(bookingPanelSelector);
+
         const bookingPanels = await page.$$(
-            'div[role="group"]:has(> div button[data-testid="teetimes_book_now_button"], > div button[data-testid="teetimes_choose_rate_button"])'
+            bookingPanelSelector
         );
-        
+
         const teeTimes: TeeTime[] = [];
 
         for (const bookingPanel of bookingPanels) {
@@ -34,8 +39,9 @@ export async function scrapeCrystalFalls(date: Date) {
             const slotsMap = {
                 '1': '1',
                 '2': '2',
-                '1-3': '3',
-                '1-4': '4',
+                '1 or 2': '2',
+                '1 - 3': '3',
+                '1 - 4': '4',
             }
             let slotsString = await bookingPanel.$eval(
                 "[data-testid='teetimes-tile-available-players']",
@@ -50,8 +56,8 @@ export async function scrapeCrystalFalls(date: Date) {
                 throw new Error(`Invalid slots string: ${slotsString}`);
             }
 
-            const openSlots = slotsMap[slotsString as keyof typeof slotsMap]
-
+            const openSlots = slotsMap[slotsString as keyof typeof slotsMap];
+            
             teeTimes.push({ date: time, courseName: "Crystal Falls", openSlots })
         }
 

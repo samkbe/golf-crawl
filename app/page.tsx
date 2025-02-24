@@ -13,13 +13,11 @@ export default function Home() {
   const courses = [
     {
       title: "Crystal Falls",
-      value: "crystalFalls",
-      checked: false
+      key: "crystalFalls",
     },
     {
       title: "Shadow Glen",
-      value: "shadowGlen",
-      checked: false
+      key: "shadowGlen",
     }
   ];
 
@@ -34,20 +32,20 @@ export default function Home() {
         <input id="all" type="checkbox" name="all" onChange={(e) => setAllSelected(e.target.checked)}/>
         <fieldset disabled={allSelected} className={ allSelected ? "opacity-25" : "" }>
           {
-            courses.map(({ title, value }) => {
+            courses.map(({ title, key }) => {
               return (
-                <div key={value}>
-                  <label htmlFor={value}>{title}</label>
-                  <input id={value} type="checkbox" value={value} name="courses" />
+                <div key={key}>
+                  <label htmlFor={key}>{title}</label>
+                  <input id={key} type="checkbox" value={key} name="courses" />
                 </div>
               )
             })
           }
         </fieldset>
-        <button disabled={pending} type="submit">{pending ? "Fetching Tee Times..." : "Find Tee Times"}</button>
+        <button className="p-2 border-2 rounded-md" disabled={pending} type="submit">{pending ? "Fetching Tee Times..." : "Find Tee Times"}</button>
       </form>
       {pending ?
-        <h1>Loading Tee Times...</h1>
+        <></>
         :
         <div className="flex flex-wrap m-auto gap-4">
           {state.teeTimes.map(({ date, courseName, openSlots }) => {
