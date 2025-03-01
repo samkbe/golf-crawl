@@ -1,11 +1,11 @@
-import { scrapeCrystalFalls } from "../scrape/crystal-falls"; // your scraping function
+import { scrapeFalconhead } from "../scrape/falconhead"; // your scraping function
 
 export async function GET(request: Request) {
     try {
         const tomorrow = new Date();
         tomorrow.setDate(tomorrow.getDate() + 1);
 
-        const teeTimes = await scrapeCrystalFalls(tomorrow);
+        const teeTimes = await scrapeFalconhead(tomorrow);
 
         return new Response(JSON.stringify(teeTimes), {
             status: 200,

@@ -10,7 +10,9 @@
   },
   "dependencies": {
     "next": "15.1.7",
-    "puppeteer": "23.7.0",
+    "puppeteer": "^23.7.0",
+    "puppeteer-extra": "^3.3.6",
+    "puppeteer-extra-plugin-stealth": "^2.11.2",
     "react": "19.0.0",
     "react-dom": "19.0.0"
   },
