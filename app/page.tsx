@@ -18,7 +18,15 @@ export default function Home() {
     {
       title: "Shadow Glen",
       key: "shadowGlen",
-    }
+    },
+    {
+      title: "Harvey Penick",
+      key: "harveyPenick",
+    },
+    // {
+    //   title: "Shadow Glen",
+    //   key: "shadowGlen",
+    // },
   ];
 
   const [ allSelected, setAllSelected ] = useState(false);
@@ -79,12 +87,11 @@ function formatDate(date: Date) : string {
 
 // Golf ATX - Random
 // Forrest Creek - ChronoGolf
+
 // Falconhead - Foreup
 // Riverside - Foreup
 // Avery Ranch - Foreup
+
 // Harvey Penick - Teeitup
 // Crystal Falls - Teeitup
 // Shadowglen - Teeitup
-
-//BUGS
-// Need to actually use the date argument in golfatx scraping function
