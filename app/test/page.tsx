@@ -21,7 +21,7 @@ export default function Page() {
                 <ul>
                     {state.map((teeTime, index) => (
                         <li key={index}>
-                            {teeTime.courseName} at {JSON.stringify(teeTime.date)}
+                            {teeTime.courseName} at {JSON.stringify(teeTime.price)}
                         </li>
                     ))}
                 </ul>

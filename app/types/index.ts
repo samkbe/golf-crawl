@@ -8,4 +8,5 @@ export interface TeeTime {
     date: Date;
     courseName: string;
     openSlots: string;
+    price?: number;
 }

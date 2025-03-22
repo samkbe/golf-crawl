@@ -48,13 +48,14 @@ export default function Home() {
         <></>
         :
         <div className="flex flex-wrap m-auto gap-4">
-          {state.teeTimes.map(({ date, courseName, openSlots }) => {
+          {state.teeTimes.map(({ date, courseName, openSlots, price }) => {
             const formattedDate = formatDate(date);
             return (
               <div className="text-center p-4 border-2">
                 <h3 className="bold">{courseName}</h3>
                 <h4>{formattedDate}</h4>
                 <h4>{openSlots}</h4>
+                { price && <h4>{price}</h4> }
               </div>
             )
           })}

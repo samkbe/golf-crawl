@@ -61,7 +61,27 @@ export async function scrapeTeeItUp(date: Date, url: string, courseName: string)
 
             const openSlots = slotsMap[slotsString as keyof typeof slotsMap];
 
-            teeTimes.push({ date: time, courseName, openSlots })
+            const price = await bookingPanel.$$eval(
+                "p.MuiTypography-root.MuiTypography-body1",
+                (elements) => {
+                    console.log('ELEMENTS: ', elements);
+                    for (const el of elements) {
+                        if (el.textContent?.includes("$")) {
+                            return parseFloat(el.textContent.replace(/[$,]/g, ''));
+                        }
+                    }
+                    return null;
+                }
+            )
+
+            if (!price) throw new Error("Couldn't parse price");
+
+            teeTimes.push({ 
+                date: time, 
+                courseName, 
+                openSlots,
+                price
+            })
         }
 
         await browser.close();
@@ -70,27 +90,6 @@ export async function scrapeTeeItUp(date: Date, url: string, courseName: string)
         console.log(e);
         throw new Error("Failed");
     }
-}
-
-export function mergeDateWithTime(date: Date, timeString: string): Date {
-    // Parse the time string ("2:36 PM") into hours and minutes
-    const [time, modifier] = timeString.split(" ");
-    const [hoursStr, minutesStr] = time.split(":");
-    let hours = parseInt(hoursStr, 10);
-    const minutes = parseInt(minutesStr, 10);
-  
-    // Convert to 24-hour format
-    if (modifier === "PM" && hours !== 12) {
-        hours += 12;
-    } else if (modifier === "AM" && hours === 12) {
-        hours = 0;
-    }
-  
-    // Create new Date object based on the provided date argument
-    const newDate = new Date(date);
-    newDate.setHours(hours, minutes, 0, 0); // Set hours, minutes, reset seconds & milliseconds
-  
-    return newDate;
 }
 
 export async function scrapeForeUp(date: Date, url: string, courseName: string) {
@@ -148,9 +147,24 @@ export async function scrapeForeUp(date: Date, url: string, courseName: string) 
 
             slotsString = slotsString.trim();
 
-            if (!slotsString) throw new Error(`Couldn'y parse number of open slots`);
+            if (!slotsString) throw new Error(`Couldn't parse number of open slots`);
 
-            teeTimes.push({ date: time, courseName, openSlots: slotsString })
+            let priceStr = await bookingPanel.$eval(
+                ".js-booking-green-fee",
+                (el) => el.textContent
+            )
+            if (!priceStr) throw new Error(`Couldn't parse price`);
+
+            priceStr = priceStr?.trim();
+
+            const price = parseFloat(priceStr.replace(/[$,]/g, ''));
+
+            teeTimes.push({
+                date: time,
+                openSlots: slotsString,
+                courseName,
+                price
+            });
         }
 
         await browser.close();
@@ -159,6 +173,27 @@ export async function scrapeForeUp(date: Date, url: string, courseName: string) 
         console.log(e);
         throw new Error("Failed");
     }
+}
+
+export function mergeDateWithTime(date: Date, timeString: string): Date {
+    // Parse the time string ("2:36 PM") into hours and minutes
+    const [time, modifier] = timeString.split(" ");
+    const [hoursStr, minutesStr] = time.split(":");
+    let hours = parseInt(hoursStr, 10);
+    const minutes = parseInt(minutesStr, 10);
+  
+    // Convert to 24-hour format
+    if (modifier === "PM" && hours !== 12) {
+        hours += 12;
+    } else if (modifier === "AM" && hours === 12) {
+        hours = 0;
+    }
+  
+    // Create new Date object based on the provided date argument
+    const newDate = new Date(date);
+    newDate.setHours(hours, minutes, 0, 0); // Set hours, minutes, reset seconds & milliseconds
+  
+    return newDate;
 }
 
 function mergeDateWithTimeAlt(date: Date, timeString: string): Date {
