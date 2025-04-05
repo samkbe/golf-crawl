@@ -23,10 +23,22 @@ export default function Home() {
       title: "Harvey Penick",
       key: "harveyPenick",
     },
-    // {
-    //   title: "Shadow Glen",
-    //   key: "shadowGlen",
-    // },
+    {
+      title: "Falconhead",
+      key: "falconhead",
+    },
+    {
+      title: "Riverside",
+      key: "riverside",
+    },
+    {
+      title: "Avery Ranch",
+      key: "averyRanch",
+    },
+    {
+      title: "Teravista",
+      key: "teravista",
+    },
   ];
 
   const [ allSelected, setAllSelected ] = useState(false);
@@ -91,6 +103,7 @@ function formatDate(date: Date) : string {
 // Falconhead - Foreup
 // Riverside - Foreup
 // Avery Ranch - Foreup
+// Teravista -  Foreup
 
 // Harvey Penick - Teeitup
 // Crystal Falls - Teeitup
