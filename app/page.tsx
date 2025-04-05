@@ -71,7 +71,7 @@ export default function Home() {
           {state.teeTimes.map(({ date, courseName, openSlots, price }) => {
             const formattedDate = formatDate(date);
             return (
-              <div className="text-center p-4 border-2">
+              <div className="text-center p-4 border-2" key={`${date}-${courseName}-${price}`}>
                 <h3 className="bold">{courseName}</h3>
                 <h4>{formattedDate}</h4>
                 <h4>{openSlots}</h4>
