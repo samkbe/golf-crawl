@@ -33,12 +33,9 @@ export async function fetchTeeTimes(
             .filter(Boolean);
     }
 
-    console.log('SELECTED COURSES: ', selectedCourses);
-
     try {
         const teeTimes = (await Promise.all(selectedCourses.map( async fn => {
             if (fn) {
-                console.log('FUNCTION', fn);
                 return fn(date);
             }
         })))

@@ -5,6 +5,7 @@ import { scrapeFalconhead } from "./scrape/falconhead";
 import { scrapeRiverside } from "./scrape/riverside";
 import { scrapeAveryRanch } from "./scrape/avery-ranch";
 import { scrapeTeravista } from "./scrape/teravista";
+import { scrapeGolfAtx } from "./scrape/golf-atx";
 
 export const courses = [
     { title: "Crystal Falls", key: "crystalFalls", fetchFunction: scrapeCrystalFalls },
@@ -14,4 +15,5 @@ export const courses = [
     { title: "Riverside", key: "riverside", fetchFunction: scrapeRiverside },
     { title: "Avery Ranch", key: "averyRanch", fetchFunction: scrapeAveryRanch },
     { title: "Teravista", key: "teravista", fetchFunction: scrapeTeravista },
+    { title: "Golf ATX", key: "golfAtx", fetchFunction: scrapeGolfAtx }
 ];

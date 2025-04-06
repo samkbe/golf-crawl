@@ -25,11 +25,11 @@ export async function scrapeGolfAtx(targetDate: Date) {
         }
     
         // Step 2: Prepare the booking URL with CSRF token and dynamic date
-        const tomorrow = new Date();
-        tomorrow.setDate(tomorrow.getDate() + 1);
+        // const tomorrow = new Date();
+        // tomorrow.setDate(tomorrow.getDate() + 1);
         const formattedDate = `${
-          tomorrow.getMonth() + 1
-        }/${tomorrow.getDate()}/${tomorrow.getFullYear()}`;
+          targetDate.getMonth() + 1
+        }/${targetDate.getDate()}/${targetDate.getFullYear()}`;
     
         const bookingUrl = `https://txaustinweb.myvscloud.com/webtrac/web/search.html?Action=Start&begindate=${encodeURIComponent(
           formattedDate

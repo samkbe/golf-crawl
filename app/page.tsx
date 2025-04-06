@@ -39,6 +39,10 @@ export default function Home() {
       title: "Teravista",
       key: "teravista",
     },
+    {
+      title: "Golf ATX",
+      key: "golfAtx"
+    }
   ];
 
   const [ allSelected, setAllSelected ] = useState(false);
