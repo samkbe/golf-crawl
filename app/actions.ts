@@ -1,15 +1,13 @@
 "use server";
 import { scrapeGolfAtx } from "../app/scrape/golf-atx"
-import { FetchTeeTimesState } from "./types";
+import { FetchTeeTimesState, TeeTime } from "./types";
 import { courses } from "./courses";
+import { cache } from "./cache";
 
 export async function fetchTeeTimes(
     prevState: FetchTeeTimesState,
     formData: FormData,
 ) : Promise<FetchTeeTimesState> {
-    
-    console.log([...formData.entries()]);
-    console.log(formData.getAll("courses"));
 
     const dateString = formData.get("date");
     if (!dateString || typeof dateString !== 'string') return { ...prevState, error: "Date is required" };
@@ -23,26 +21,46 @@ export async function fetchTeeTimes(
     let selectedCourses;
 
     if (allSelected) {
-        selectedCourses = courses.map(({ fetchFunction }) => fetchFunction);
+        selectedCourses = courses.map(({ fetchFunction, key }) => {
+            return {
+                fetchFunction,
+                key
+            }
+        });
     } else {
         selectedCourses = [...formData.getAll("courses")]
             .map((val) => {
                 const fn = courses.find((course) => course.key === val);
-                if (fn) return fn.fetchFunction;
+                if (fn) return {
+                    fetchFunction: fn.fetchFunction,
+                    key: fn.key
+                };
             })
             .filter(Boolean);
     }
 
     try {
-        const teeTimes = (await Promise.all(selectedCourses.map( async fn => {
-            if (fn) {
-                return fn(date);
+        const teeTimes = (await Promise.all(selectedCourses.map( async (item) => {
+            //Caching Logic here
+            if (item && item.fetchFunction) {
+
+                const cacheKey = date.toISOString().split("T")[0] + item.key;
+                const cached = cache.get(cacheKey) as TeeTime[] | undefined;
+
+                if (cached) {
+                    console.log("Returned cached function for: ", item.key);
+                    return cached;
+                } else {
+                    console.log("Fetching fresh result for: ", item.key);
+                    const result = item.fetchFunction(date);
+                    cache.set(cacheKey, result);
+                    return result;
+                }
             }
         })))
             .flat()
             .filter((teeTime) => teeTime !== undefined);
 
-        console.log('TEETIMES: ', teeTimes);
         if (!teeTimes) return { ...prevState,  error: "Scrape Function Failed" };
         return { teeTimes, error: "", isLoading: false };
     }
