@@ -25,8 +25,6 @@ export async function scrapeGolfAtx(targetDate: Date) {
         }
     
         // Step 2: Prepare the booking URL with CSRF token and dynamic date
-        // const tomorrow = new Date();
-        // tomorrow.setDate(tomorrow.getDate() + 1);
         const formattedDate = `${
           targetDate.getMonth() + 1
         }/${targetDate.getDate()}/${targetDate.getFullYear()}`;

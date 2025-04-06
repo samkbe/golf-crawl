@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "next": "15.1.7",
+    "node-cache": "^5.1.2",
     "puppeteer": "^23.7.0",
     "puppeteer-extra": "^3.3.6",
     "puppeteer-extra-plugin-stealth": "^2.11.2",
