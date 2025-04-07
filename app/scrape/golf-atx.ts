@@ -6,7 +6,7 @@ export async function scrapeGolfAtx(targetDate: Date, golfAtxcourses?: string[])
     try {
         // Launch Puppeteer
         puppeteer.use(StealthPlugin());
-        const browser = await puppeteer.launch({ headless: false, slowMo: 100 });
+        const browser = await puppeteer.launch({ headless: false });
         const page = await browser.newPage();
     
         // Step 1: Go to the main page to retrieve the CSRF token
@@ -30,10 +30,12 @@ export async function scrapeGolfAtx(targetDate: Date, golfAtxcourses?: string[])
         const formattedDate = `${
           targetDate.getMonth() + 1
         }/${targetDate.getDate()}/${targetDate.getFullYear()}`;
-    
+
         const bookingUrl = `https://txaustinweb.myvscloud.com/webtrac/web/search.html?Action=Start&begindate=${encodeURIComponent(
           formattedDate
         )}&begintime=07:00+am&numberofplayers=1&numberofholes=18&_csrf_token=${csrfToken}&module=GR`;
+
+        console.log("BOOKING URL: ", bookingUrl);
     
         // Step 3: Navigate to the booking page URL
         await page.goto(bookingUrl);
@@ -42,10 +44,18 @@ export async function scrapeGolfAtx(targetDate: Date, golfAtxcourses?: string[])
     
         const teeTimes: TeeTime[] = [];
 
-        let hasNextPage = true;
+        const totalPages = (await page.$$(`[data-click-set-value]:not([data-icon-secondary='ui-icon-seek-end'])`)).length;
+
+        let hasNextPage = totalPages > 0;
         let pageNumber = 1;
 
-        while (hasNextPage) {
+        do {
+          console.log("Clicked Page ", pageNumber, "Tee Times: ", teeTimes.length);
+          
+          if (pageNumber >= totalPages) {
+            hasNextPage = false;
+          }
+
           const courseElements = await page.$$(".result-content");
 
           for (const courseElement of courseElements) {
@@ -81,23 +91,20 @@ export async function scrapeGolfAtx(targetDate: Date, golfAtxcourses?: string[])
                 'td[data-title="Open Slots"]',
                 (el) => el.textContent?.trim() || ""
               );
-      
+              
               teeTimes.push({ date, openSlots, courseName });
             }
           }
 
-          const nextButton = await page.$(`[data-click-set-value='${pageNumber + 1}']:not([data-icon-secondary='ui-icon-seek-end'])`);
-
-          if (nextButton) {
-            await Promise.all([
-              nextButton.click(),
-              page.waitForNavigation({ waitUntil: "networkidle0" }),
-            ]);
-            pageNumber ++;
-          } else {
-            hasNextPage = false;
+          if (hasNextPage) {
+            await new Promise(r => setTimeout(r, 2000)); // 1 second delay
+            pageNumber += 1;
+            await page.goto(bookingUrl + `&page=${pageNumber}`);
+            await page.waitForSelector(".result-content", { timeout: 10000 });
           }
-        }
+
+        } while (hasNextPage);
+
         // Close the browser
         await browser.close();
         return teeTimes;
