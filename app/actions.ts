@@ -42,7 +42,7 @@ export async function fetchTeeTimes(
     try {
         const teeTimes = (await Promise.all(selectedCourses.map( async (item) => {
             //Caching Logic here
-            if (item && item.fetchFunction) {
+            if (item?.fetchFunction) {
 
                 const cacheKey = date.toISOString().split("T")[0] + item.key;
                 const cached = cache.get(cacheKey) as TeeTime[] | undefined;

@@ -106,8 +106,6 @@ export async function scrapeForeUp(date: Date, url: string, courseName: string) 
 
         const buttons = await page.$$('.online-booking-content button.btn.btn-primary');
 
-        console.log('Buttons: ',  buttons.length);
-
         for (const button of buttons) {
             const text = await page.evaluate(el => el.textContent?.trim(), button);
     

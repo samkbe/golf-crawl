@@ -1,10 +1,12 @@
-import puppeteer from "puppeteer";
+import puppeteer from "puppeteer-extra";
+import StealthPlugin from "puppeteer-extra-plugin-stealth";
 import type { TeeTime } from "../types";
 
-export async function scrapeGolfAtx(targetDate: Date) {
+export async function scrapeGolfAtx(targetDate: Date, golfAtxcourses?: string[]) {
     try {
         // Launch Puppeteer
-        const browser = await puppeteer.launch({ headless: true });
+        puppeteer.use(StealthPlugin());
+        const browser = await puppeteer.launch({ headless: false, slowMo: 100 });
         const page = await browser.newPage();
     
         // Step 1: Go to the main page to retrieve the CSRF token
@@ -37,45 +39,63 @@ export async function scrapeGolfAtx(targetDate: Date) {
         await page.goto(bookingUrl);
     
         // Step 4: Select and process elements directly
-        const courseElements = await page.$$(".result-content");
     
         const teeTimes: TeeTime[] = [];
-    
-        for (const courseElement of courseElements) {
-          // Get course name
-          const courseName = await courseElement.$eval(
-            "h2 span",
-            (el) => el.textContent?.trim() || ""
-          );
-    
-          // Get each tee time row
-          const teeTimeRows = await courseElement.$$("tbody tr");
-    
-          for (const row of teeTimeRows) {
-    
-            // Extract each cell's data for the tee time
-            let day = await row.$eval(
-              'td[data-title="Date"]',
-              (el) => el.textContent
-            );
-            if (!day) throw new Error("Couldn't scrape date value");
-            day = day.trim();
-            
-            let time = await row.$eval(
-              'td[data-title="Time"]',
-              (el) => el.textContent
-            );
-            if (!time) throw new Error("Couldn't scrape time value");
-            time = time.trim();
-    
-            const date = new Date(`${day} ${time}`);
-    
-            const openSlots = await row.$eval(
-              'td[data-title="Open Slots"]',
+
+        let hasNextPage = true;
+        let pageNumber = 1;
+
+        while (hasNextPage) {
+          const courseElements = await page.$$(".result-content");
+
+          for (const courseElement of courseElements) {
+            // Get course name
+            const courseName = await courseElement.$eval(
+              "h2 span",
               (el) => el.textContent?.trim() || ""
             );
-    
-            teeTimes.push({ date, openSlots, courseName });
+      
+            // Get each tee time row
+            const teeTimeRows = await courseElement.$$("tbody tr");
+      
+            for (const row of teeTimeRows) {
+      
+              // Extract each cell's data for the tee time
+              let day = await row.$eval(
+                'td[data-title="Date"]',
+                (el) => el.textContent
+              );
+              if (!day) throw new Error("Couldn't scrape date value");
+              day = day.trim();
+              
+              let time = await row.$eval(
+                'td[data-title="Time"]',
+                (el) => el.textContent
+              );
+              if (!time) throw new Error("Couldn't scrape time value");
+              time = time.trim();
+      
+              const date = new Date(`${day} ${time}`);
+      
+              const openSlots = await row.$eval(
+                'td[data-title="Open Slots"]',
+                (el) => el.textContent?.trim() || ""
+              );
+      
+              teeTimes.push({ date, openSlots, courseName });
+            }
+          }
+
+          const nextButton = await page.$(`[data-click-set-value='${pageNumber + 1}']:not([data-icon-secondary='ui-icon-seek-end'])`);
+
+          if (nextButton) {
+            await Promise.all([
+              nextButton.click(),
+              page.waitForNavigation({ waitUntil: "networkidle0" }),
+            ]);
+            pageNumber ++;
+          } else {
+            hasNextPage = false;
           }
         }
         // Close the browser
