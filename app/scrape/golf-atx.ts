@@ -50,8 +50,10 @@ export async function scrapeGolfAtx(targetDate: Date, golfAtxcourses?: string[])
         let pageNumber = 1;
 
         do {
-          console.log("Clicked Page ", pageNumber, "Tee Times: ", teeTimes.length);
           
+          console.log(`Entering Loop - pageNumber - ${pageNumber}\nLast item in teeTimes - ${teeTimes[teeTimes.length - 1] ? teeTimes[teeTimes.length - 1].courseName : 'No TeeTimes yet'}, ${teeTimes[teeTimes.length - 1] ? teeTimes[teeTimes.length - 1].date : "No Teetimes yet" }\nTeetimes total length - ${teeTimes.length}`)
+
+
           if (pageNumber >= totalPages) {
             hasNextPage = false;
           }
@@ -97,8 +99,9 @@ export async function scrapeGolfAtx(targetDate: Date, golfAtxcourses?: string[])
           }
 
           if (hasNextPage) {
-            await new Promise(r => setTimeout(r, 2000)); // 1 second delay
+            console.log(`hasNextPage if Statement - pagenumber: ${pageNumber}`);
             pageNumber += 1;
+            await new Promise(r => setTimeout(r, 2000)); // 1 second delay
             await page.goto(bookingUrl + `&page=${pageNumber}`);
             await page.waitForSelector(".result-content", { timeout: 10000 });
           }
@@ -107,9 +110,22 @@ export async function scrapeGolfAtx(targetDate: Date, golfAtxcourses?: string[])
 
         // Close the browser
         await browser.close();
+
+        console.log(`HAS DUPLICATES: ${hasDuplicates(teeTimes)}`);
+        console.log("Length: ", teeTimes.length);
         return teeTimes;
       } catch (e) {
         console.log(e);
         throw new Error("Failed");
       }
 }
+
+const hasDuplicates = (arr: { date: Date; openSlots: string; courseName: string }[]) => {
+  const seen = new Set();
+  for (const item of arr) {
+    const key = `${item.date}|${item.courseName}`;
+    if (seen.has(key)) return true;
+    seen.add(key);
+  }
+  return false;
+};
