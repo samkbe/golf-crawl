@@ -8,6 +8,7 @@ export interface TeeTime {
     date: Date;
     courseName: string;
     openSlots: string;
+    bookingLink?: string;
     price?: number;
     golfAtxKey?: string;
 }

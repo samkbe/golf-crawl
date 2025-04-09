@@ -2,6 +2,54 @@
 import { fetchTeeTimes } from "./actions";
 import { useActionState } from "react";
 import { useState } from "react";
+import { TeeTimeTable } from "./components/teeTimeTable";
+
+const courses = [
+  {
+    title: "Crystal Falls",
+    key: "crystalFalls",
+  },
+  {
+    title: "Shadow Glen",
+    key: "shadowGlen",
+  },
+  {
+    title: "Harvey Penick",
+    key: "harveyPenick",
+  },
+  {
+    title: "Falconhead",
+    key: "falconhead",
+  },
+  {
+    title: "Riverside",
+    key: "riverside",
+  },
+  {
+    title: "Avery Ranch",
+    key: "averyRanch",
+  },
+  {
+    title: "Teravista",
+    key: "teravista",
+  },
+  {
+    title: "Lions",
+    key: "lions"
+  },
+  {
+    title: "Morris Williams",
+    key: "morrisWilliams"
+  },
+  {
+    title: "Roy Kizer",
+    key: "royKizer"
+  },
+  {
+    title: "Jimmy Clay",
+    key: "jimmyClay"
+  }
+];
 
 export default function Home() {
   const [state, formAction, pending] = useActionState(fetchTeeTimes, { 
@@ -9,53 +57,6 @@ export default function Home() {
     error: "",
     isLoading: false,
   });
-
-  const courses = [
-    {
-      title: "Crystal Falls",
-      key: "crystalFalls",
-    },
-    {
-      title: "Shadow Glen",
-      key: "shadowGlen",
-    },
-    {
-      title: "Harvey Penick",
-      key: "harveyPenick",
-    },
-    {
-      title: "Falconhead",
-      key: "falconhead",
-    },
-    {
-      title: "Riverside",
-      key: "riverside",
-    },
-    {
-      title: "Avery Ranch",
-      key: "averyRanch",
-    },
-    {
-      title: "Teravista",
-      key: "teravista",
-    },
-    {
-      title: "Lions",
-      key: "lions"
-    },
-    {
-      title: "Morris Williams",
-      key: "morrisWilliams"
-    },
-    {
-      title: "Roy Kizer",
-      key: "royKizer"
-    },
-    {
-      title: "Jimmy Clay",
-      key: "jimmyClay"
-    }
-  ];
 
   const [ allSelected, setAllSelected ] = useState(false);
 
@@ -87,19 +88,21 @@ export default function Home() {
       {pending ?
         <></>
         :
-        <div className="flex flex-wrap m-auto gap-4">
-          {state.teeTimes.map(({ date, courseName, openSlots, price }) => {
-            const formattedDate = formatDate(date);
-            return (
-              <div className="text-center p-4 border-2" key={`${date}-${courseName}-${price}`}>
-                <h3 className="bold">{courseName}</h3>
-                <h4>{formattedDate}</h4>
-                <h4>{openSlots}</h4>
-                { price && <h4>{price}</h4> }
-              </div>
-            )
-          })}
-        </div>  
+        <TeeTimeTable data={state.teeTimes}/>
+        // <div className="flex flex-wrap m-auto gap-4">
+        //   {state.teeTimes.map(({ date, courseName, openSlots, price, bookingLink }) => {
+        //     const formattedDate = formatDate(date);
+        //     return (
+        //       <div className="text-center p-4 border-2" key={`${date}-${courseName}-${price}`}>
+        //         <h3 className="bold">{courseName}</h3>
+        //         <h4>{formattedDate}</h4>
+        //         <h4>{openSlots}</h4>
+        //         { price && <h4>{price}</h4> }
+        //         { bookingLink && <a target="_blank" href={bookingLink}><button>{price}</button></a> }
+        //       </div>
+        //     )
+        //   })}
+        // </div>  
       }
     </div>
   );
