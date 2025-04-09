@@ -1,12 +1,22 @@
 import puppeteer from "puppeteer-extra";
 import StealthPlugin from "puppeteer-extra-plugin-stealth";
 import type { TeeTime } from "../types";
+import { cache } from "../cache";
 
-export async function scrapeGolfAtx(targetDate: Date, golfAtxcourses?: string[]) {
+
+const courseKeyMap : { [key: string]: string } = {
+  "Jimmy Clay Golf Course": "jimmyClay",
+  "Morris Williams Golf Course": "morrisWilliams",
+  "Roy Kizer Golf Course": "royKizer",
+  "Lions Municipal Golf Course": "lions",
+}
+
+
+export async function scrapeGolfAtx(targetDate: Date) {
     try {
         // Launch Puppeteer
         puppeteer.use(StealthPlugin());
-        const browser = await puppeteer.launch({ headless: false });
+        const browser = await puppeteer.launch({ headless: true });
         const page = await browser.newPage();
     
         // Step 1: Go to the main page to retrieve the CSRF token
@@ -66,7 +76,8 @@ export async function scrapeGolfAtx(targetDate: Date, golfAtxcourses?: string[])
               "h2 span",
               (el) => el.textContent?.trim() || ""
             );
-      
+            const courseKey = courseKeyMap[courseName];
+
             // Get each tee time row
             const teeTimeRows = await courseElement.$$("tbody tr");
       
@@ -94,12 +105,11 @@ export async function scrapeGolfAtx(targetDate: Date, golfAtxcourses?: string[])
                 (el) => el.textContent?.trim() || ""
               );
               
-              teeTimes.push({ date, openSlots, courseName });
+              teeTimes.push({ date, openSlots, courseName, golfAtxKey: courseKey });
             }
           }
 
           if (hasNextPage) {
-            console.log(`hasNextPage if Statement - pagenumber: ${pageNumber}`);
             pageNumber += 1;
             await new Promise(r => setTimeout(r, 2000)); // 1 second delay
             await page.goto(bookingUrl + `&page=${pageNumber}`);
@@ -111,8 +121,8 @@ export async function scrapeGolfAtx(targetDate: Date, golfAtxcourses?: string[])
         // Close the browser
         await browser.close();
 
-        console.log(`HAS DUPLICATES: ${hasDuplicates(teeTimes)}`);
-        console.log("Length: ", teeTimes.length);
+        // console.log(`HAS DUPLICATES: ${hasDuplicates(teeTimes)}`);
+        // console.log("Length: ", teeTimes.length);
         return teeTimes;
       } catch (e) {
         console.log(e);
@@ -120,12 +130,28 @@ export async function scrapeGolfAtx(targetDate: Date, golfAtxcourses?: string[])
       }
 }
 
-const hasDuplicates = (arr: { date: Date; openSlots: string; courseName: string }[]) => {
-  const seen = new Set();
-  for (const item of arr) {
-    const key = `${item.date}|${item.courseName}`;
-    if (seen.has(key)) return true;
-    seen.add(key);
-  }
-  return false;
-};
+// const hasDuplicates = (arr: { date: Date; openSlots: string; courseName: string }[]) => {
+//   const seen = new Set();
+//   for (const item of arr) {
+//     const key = `${item.date}|${item.courseName}`;
+//     if (seen.has(key)) return true;
+//     seen.add(key);
+//   }
+//   return false;
+// };
+
+export async function golfAtxResults(targetDate: Date, key?: string) {
+
+  const cacheKey = targetDate.toISOString().split("T")[0] + "golfAtx";
+  const cached = cache.get(cacheKey) as TeeTime[] | undefined;
+
+  if (cached) { return cached.filter((item) => item.golfAtxKey === key) };
+
+  const result = await scrapeGolfAtx(targetDate);
+
+  cache.set(cacheKey, result);
+
+  if (result) return result.filter((item) => item.golfAtxKey === key);
+
+  return undefined;
+}

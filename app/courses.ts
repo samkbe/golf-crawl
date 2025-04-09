@@ -6,13 +6,13 @@ import { scrapeFalconhead } from "./scrape/falconhead";
 import { scrapeRiverside } from "./scrape/riverside";
 import { scrapeAveryRanch } from "./scrape/avery-ranch";
 import { scrapeTeravista } from "./scrape/teravista";
-import { scrapeGolfAtx } from "./scrape/golf-atx";
+import { golfAtxResults } from "./scrape/golf-atx";
 
 type course = {
     key: string;
     title: string;
-    fetchFunction: (date: Date, golfAtxcourses?: string[]) => Promise<TeeTime[] | undefined>;
-    golfAtxCourse?: string[];
+    fetchFunction: (date: Date, golfAtxcourse?: string) => Promise<TeeTime[] | undefined>;
+    golfAtxCourse?: boolean;
 }
 
 export const courses : course[] = [
@@ -23,5 +23,8 @@ export const courses : course[] = [
     { title: "Riverside", key: "riverside", fetchFunction: scrapeRiverside },
     { title: "Avery Ranch", key: "averyRanch", fetchFunction: scrapeAveryRanch },
     { title: "Teravista", key: "teravista", fetchFunction: scrapeTeravista },
-    { title: "Golf ATX", key: "golfAtx", golfAtxCourse: [], fetchFunction: scrapeGolfAtx }
+    { title: "Lions", key: "lions", golfAtxCourse: true, fetchFunction: golfAtxResults },
+    { title: "Jimmy Clay", key: "jimmyClay", golfAtxCourse: true, fetchFunction: golfAtxResults },
+    { title: "Roy Kizer", key: "royKizer", golfAtxCourse: true, fetchFunction: golfAtxResults },
+    { title: "Morris Williams", key: "morrisWilliams", golfAtxCourse: true, fetchFunction: golfAtxResults },
 ];

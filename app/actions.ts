@@ -21,10 +21,11 @@ export async function fetchTeeTimes(
     let selectedCourses;
 
     if (allSelected) {
-        selectedCourses = courses.map(({ fetchFunction, key }) => {
+        selectedCourses = courses.map(({ fetchFunction, key, golfAtxCourse }) => {
             return {
                 fetchFunction,
-                key
+                key,
+                golfAtxCourse
             }
         });
     } else {
@@ -33,7 +34,8 @@ export async function fetchTeeTimes(
                 const fn = courses.find((course) => course.key === val);
                 if (fn) return {
                     fetchFunction: fn.fetchFunction,
-                    key: fn.key
+                    key: fn.key,
+                    golfAtxCourse: fn.golfAtxCourse,
                 };
             })
             .filter(Boolean);
@@ -42,20 +44,19 @@ export async function fetchTeeTimes(
     try {
         const teeTimes = (await Promise.all(selectedCourses.map( async (item) => {
             //Caching Logic here
-            if (item?.fetchFunction) {
+            if (item) {
+
+                if (item.golfAtxCourse) return item.fetchFunction(date, item.key);
 
                 const cacheKey = date.toISOString().split("T")[0] + item.key;
                 const cached = cache.get(cacheKey) as TeeTime[] | undefined;
 
-                if (cached) {
-                    console.log("Returned cached function for: ", item.key);
-                    return cached;
-                } else {
-                    console.log("Fetching fresh result for: ", item.key);
-                    const result = item.fetchFunction(date);
-                    cache.set(cacheKey, result);
-                    return result;
-                }
+                if (cached) return cached;
+
+                const result = item.fetchFunction(date);
+                cache.set(cacheKey, result);
+                return result;
+                
             }
         })))
             .flat()

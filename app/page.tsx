@@ -40,8 +40,20 @@ export default function Home() {
       key: "teravista",
     },
     {
-      title: "Golf ATX",
-      key: "golfAtx"
+      title: "Lions",
+      key: "lions"
+    },
+    {
+      title: "Morris Williams",
+      key: "morrisWilliams"
+    },
+    {
+      title: "Roy Kizer",
+      key: "royKizer"
+    },
+    {
+      title: "Jimmy Clay",
+      key: "jimmyClay"
     }
   ];
 
@@ -49,11 +61,15 @@ export default function Home() {
 
   return (
     <div>
-      <form action={formAction}>
-        <label htmlFor="date">Date:</label>
-        <input id="date" name="date" type="date" required />
-        <label htmlFor="all">All Courses</label>
-        <input id="all" type="checkbox" name="all" onChange={(e) => setAllSelected(e.target.checked)}/>
+      <form action={formAction} className="mx-auto">
+        <div>
+          <label htmlFor="date">Date:</label>
+          <input id="date" name="date" type="date" required />
+        </div>
+        <div>
+          <label htmlFor="all">All Courses</label>
+          <input id="all" type="checkbox" name="all" onChange={(e) => setAllSelected(e.target.checked)}/>
+        </div>
         <fieldset disabled={allSelected} className={ allSelected ? "opacity-25" : "" }>
           {
             courses.map(({ title, key }) => {
