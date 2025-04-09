@@ -6,6 +6,8 @@ export async function scrapeTeeItUp(date: Date, url: string, courseName: string)
     // READ: url must not contain any url params besides 'course'
     // Example: https://crystal-falls-golf-club-2.book.teeitup.com/?course=5741`
 
+    puppeteer.use(StealthPlugin());
+
     try {
         const browser = await puppeteer.launch({ headless: true });
         const page = await browser.newPage();
@@ -45,6 +47,7 @@ export async function scrapeTeeItUp(date: Date, url: string, courseName: string)
                 '1 or 2': '2',
                 '1 - 3': '3',
                 '1 - 4': '4',
+                '2 - 4': '4',
             }
             let slotsString = await bookingPanel.$eval(
                 "[data-testid='teetimes-tile-available-players']",

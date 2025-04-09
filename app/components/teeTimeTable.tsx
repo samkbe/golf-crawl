@@ -46,7 +46,7 @@ export function TeeTimeTable({ data }: { data: TeeTime[] }) {
   });
 
   return (
-    <div className="overflow-x-auto border rounded-md mt-8">
+    <div className="overflow-x-auto border rounded-md mt-4 mb-8 mx-2 md:mx-auto max-w-2xl">
       <table className="min-w-full text-sm text-left border-collapse">
         <thead className="bg-gray-200">
           {table.getHeaderGroups().map(headerGroup => (

@@ -41,6 +41,8 @@ export async function fetchTeeTimes(
             .filter(Boolean);
     }
 
+    console.log("Selected Course: ", selectedCourses);
+
     try {
         const teeTimes = (await Promise.all(selectedCourses.map( async (item) => {
             //Caching Logic here
