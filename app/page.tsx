@@ -85,25 +85,7 @@ export default function Home() {
         </div>
         <button className="p-2 border rounded-md w-full" disabled={pending} type="submit">{pending ? "Fetching Tee Times..." : "Find Tee Times"}</button>
       </form>
-      {pending ?
-        <></>
-        :
-        <TeeTimeTable data={state.teeTimes}/>
-        // <div className="flex flex-wrap m-auto gap-4">
-        //   {state.teeTimes.map(({ date, courseName, openSlots, price, bookingLink }) => {
-        //     const formattedDate = formatDate(date);
-        //     return (
-        //       <div className="text-center p-4 border-2" key={`${date}-${courseName}-${price}`}>
-        //         <h3 className="bold">{courseName}</h3>
-        //         <h4>{formattedDate}</h4>
-        //         <h4>{openSlots}</h4>
-        //         { price && <h4>{price}</h4> }
-        //         { bookingLink && <a target="_blank" href={bookingLink}><button>{price}</button></a> }
-        //       </div>
-        //     )
-        //   })}
-        // </div>  
-      }
+        <TeeTimeTable data={state.teeTimes} pending={pending}/> 
     </div>
   );
 }

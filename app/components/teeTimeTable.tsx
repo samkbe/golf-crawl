@@ -1,38 +1,65 @@
-'use client';
+"use client";
 import {
   useReactTable,
   getCoreRowModel,
   getSortedRowModel,
   flexRender,
   createColumnHelper,
-} from '@tanstack/react-table';
-import { useState } from 'react';
-import type { TeeTime } from '../types';
-import type { SortingState } from '@tanstack/react-table';
+  getFilteredRowModel,
+} from "@tanstack/react-table";
+import { useState, useEffect } from "react";
+import type { TeeTime } from "../types";
+import type { SortingState } from "@tanstack/react-table";
 
 const columnHelper = createColumnHelper<any>();
 
 const columns = [
-  columnHelper.accessor('courseName', {
-    header: 'Course',
+  columnHelper.accessor("courseName", {
+    header: "Course",
   }),
-  columnHelper.accessor('date', {
-    header: 'Date',
-    cell: info => formatDate(info.getValue()),
-    sortingFn: (a, b) => new Date(a.original.date).getTime() - new Date(b.original.date).getTime(),
+  columnHelper.accessor("date", {
+    header: "Date",
+    cell: (info) => formatDate(info.getValue()),
+    sortingFn: (a, b) =>
+      new Date(a.original.date).getTime() - new Date(b.original.date).getTime(),
   }),
-  columnHelper.accessor('openSlots', {
-    header: 'Open Slots',
+  columnHelper.accessor("openSlots", {
+    header: "Open Slots",
   }),
-  columnHelper.accessor('price', {
-    header: 'Price',
-    cell: info => info.getValue() ?? 'N/A',
+  columnHelper.accessor("price", {
+    header: "Price",
+    cell: (info) => info.getValue() ?? "N/A",
   }),
 ];
 
-export function TeeTimeTable({ data }: { data: TeeTime[] }) {
-    
-  const [sorting, setSorting] = useState<SortingState>([]);
+export function TeeTimeTable({
+  data,
+  pending,
+}: {
+  data: TeeTime[];
+  pending: boolean;
+}) {
+
+
+  useEffect(() => {
+    const map : { [key: string]: boolean } = {};
+    for (let course of data) {
+        if (!map[course.courseName]) {
+            map[course.courseName] = true;
+        }
+    }
+    const newArr = Object.keys(map).map((course) => {
+        return {
+            course: course, 
+            active: true
+        }
+    })
+    setSelectedCourses(newArr);
+  }, []);
+  
+  const [ courses, setCourses ] = useState<string[]>([]);
+  const [ selectedCourses, setSelectedCourses ] = useState<{active: boolean, course: string}[]>([])
+  const [ sorting, setSorting ] = useState<SortingState>([]);
 
   const table = useReactTable({
     data,
@@ -43,24 +70,44 @@ export function TeeTimeTable({ data }: { data: TeeTime[] }) {
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
     onSortingChange: setSorting,
+    getFilteredRowModel: getFilteredRowModel(),
+    globalFilterFn: "arrIncludes"
   });
 
   return (
+    <>
+    <div className="border rounded-md my-4 mx-2 md:mx-auto max-w-2xl p-4">
+        <h2 className="text-center bold">Filters</h2>
+        <div>
+            {selectedCourses.map(({course, active}) => {
+                return (
+                    <div key={course} className={`cursor-pointer p-2 rounded-xl border inline-block ${active ? "bg-teal-300" : "bg-teal-50"}`}>{course}</div>
+                )
+            })}
+        </div>
+        <div>
+        <label htmlFor="priceRange">Price</label>
+        <input id="priceRange" type="range" min="0" max="500" />
+        </div>
+    </div>
     <div className="overflow-x-auto border rounded-md mt-4 mb-8 mx-2 md:mx-auto max-w-2xl">
       <table className="min-w-full text-sm text-left border-collapse">
         <thead className="bg-gray-200">
-          {table.getHeaderGroups().map(headerGroup => (
+          {table.getHeaderGroups().map((headerGroup) => (
             <tr key={headerGroup.id}>
-              {headerGroup.headers.map(header => (
+              {headerGroup.headers.map((header) => (
                 <th
                   key={header.id}
                   className="p-2 cursor-pointer"
                   onClick={header.column.getToggleSortingHandler()}
                 >
-                  {flexRender(header.column.columnDef.header, header.getContext())}
+                  {flexRender(
+                    header.column.columnDef.header,
+                    header.getContext()
+                  )}
                   {{
-                    asc: ' 🔼',
-                    desc: ' 🔽',
+                    asc: " 🔼",
+                    desc: " 🔽",
                   }[header.column.getIsSorted() as string] ?? null}
                 </th>
               ))}
@@ -68,9 +115,9 @@ export function TeeTimeTable({ data }: { data: TeeTime[] }) {
           ))}
         </thead>
         <tbody>
-          {table.getRowModel().rows.map(row => (
+          {table.getRowModel().rows.map((row) => (
             <tr key={row.id} className="border-t">
-              {row.getVisibleCells().map(cell => (
+              {row.getVisibleCells().map((cell) => (
                 <td key={cell.id} className="p-2">
                   {flexRender(cell.column.columnDef.cell, cell.getContext())}
                 </td>
@@ -80,16 +127,17 @@ export function TeeTimeTable({ data }: { data: TeeTime[] }) {
         </tbody>
       </table>
     </div>
+    </>
   );
 }
 
 function formatDate(date: Date | string): string {
-  return new Intl.DateTimeFormat('en-US', {
-    timeZone: 'America/Chicago',
-    month: 'long',
-    day: 'numeric',
-    hour: 'numeric',
-    minute: '2-digit',
+  return new Intl.DateTimeFormat("en-US", {
+    timeZone: "America/Chicago",
+    month: "long",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
     hour12: true,
   }).format(new Date(date));
 }
