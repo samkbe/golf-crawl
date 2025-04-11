@@ -6,23 +6,20 @@ import {
 	flexRender,
 	createColumnHelper,
 	getFilteredRowModel,
-	
 } from "@tanstack/react-table";
 import { useState, useEffect } from "react";
 import type { TeeTime } from "../types";
 import type { SortingState, ColumnFiltersState } from "@tanstack/react-table";
-
-const includesFilterFn = (row: any, columnId: string, filterValue: string[]) => {
-	if (!Array.isArray(filterValue)) return true;
-	return filterValue.includes(row.getValue(columnId));
-};
 
 const columnHelper = createColumnHelper<TeeTime>();
 
 const columns = [
 	columnHelper.accessor("courseName", {
 		header: "Course",
-		filterFn: includesFilterFn, // <-- use the string name you registered
+		filterFn: (row: any, columnId: string, filterValue: string[]) => {
+			if (!Array.isArray(filterValue)) return true;
+			return filterValue.includes(row.getValue(columnId));
+		},
 	}),
 	columnHelper.accessor("date", {
 		header: "Date",
@@ -58,7 +55,7 @@ export function TeeTimeTable({ data, pending }: { data: TeeTime[]; pending: bool
 		setColumnFilters([
 			{
 				id: "courseName",
-				value: Object.keys(courseMap),
+				value: Object.keys(map),
 			},
 		]);
 	}, [data]);
@@ -67,7 +64,7 @@ export function TeeTimeTable({ data, pending }: { data: TeeTime[]; pending: bool
 		[]
 	);
 	const [sorting, setSorting] = useState<SortingState>([]);
-	const [columnFilters, setColumnFilters] = useState([]);
+	const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
 
 	const table = useReactTable({
 		data,
@@ -81,9 +78,6 @@ export function TeeTimeTable({ data, pending }: { data: TeeTime[]; pending: bool
 		getCoreRowModel: getCoreRowModel(),
 		getSortedRowModel: getSortedRowModel(),
 		getFilteredRowModel: getFilteredRowModel(),
-		filterFns: {
-			includes: includesFilterFn,
-		},
 	});
 
 	return (
