@@ -33,6 +33,12 @@ const columns = [
 	columnHelper.accessor("price", {
 		header: "Price",
 		cell: (info) => info.getValue() ?? "N/A",
+		filterFn: (row: any, columnId: string, filterValue: string[]) => {
+			if (typeof filterValue !== "number") return true;
+			const price = row.getValue(columnId);
+			if (typeof price !== "number") return false;
+			return price <= filterValue;
+		},
 	}),
 ];
 
@@ -65,6 +71,7 @@ export function TeeTimeTable({ data, pending }: { data: TeeTime[]; pending: bool
 	);
 	const [sorting, setSorting] = useState<SortingState>([]);
 	const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+	const [maxPrice, setMaxPrice] = useState(500);
 
 	const table = useReactTable({
 		data,
@@ -79,6 +86,19 @@ export function TeeTimeTable({ data, pending }: { data: TeeTime[]; pending: bool
 		getSortedRowModel: getSortedRowModel(),
 		getFilteredRowModel: getFilteredRowModel(),
 	});
+
+	function updatePriceFilter(max: number) {
+		setColumnFilters((prev) => {
+			const others = prev.filter((f) => f.id !== "price");
+			return [
+				...others,
+				{
+					id: "price",
+					value: max,
+				},
+			];
+		});
+	}
 
 	return (
 		<>
@@ -121,8 +141,22 @@ export function TeeTimeTable({ data, pending }: { data: TeeTime[]; pending: bool
 					})}
 				</div>
 				<div>
-					<label htmlFor="priceRange">Price</label>
-					<input id="priceRange" type="range" min="0" max="500" />
+					<label className="pr-5" htmlFor="maxPrice">
+						Max Price: ${maxPrice}
+					</label>
+					<input
+						className="pl-5 block"
+						id="maxPrice"
+						type="range"
+						min="0"
+						max="500"
+						value={maxPrice}
+						onChange={(e) => {
+							const newMax = Number(e.target.value);
+							setMaxPrice(newMax);
+							updatePriceFilter(newMax);
+						}}
+					/>
 				</div>
 			</div>
 			<div className="overflow-x-auto border rounded-md mt-4 mb-8 mx-2 md:mx-auto max-w-2xl">
