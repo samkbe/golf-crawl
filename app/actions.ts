@@ -46,7 +46,7 @@ export async function fetchTeeTimes(
 
 	try {
 		const teeTimes = (
-			await Promise.all(
+			await Promise.allSettled(
 				selectedCourses.map(async (item) => {
 					//Caching Logic here
 					if (item) {
@@ -64,10 +64,20 @@ export async function fetchTeeTimes(
 				})
 			)
 		)
+			.map((result) => {
+				if (result.status === 'fulfilled') {
+					return result.value;
+				} else {
+					console.log('Course scraping failed:', result.reason);
+					return undefined;
+				}
+			})
 			.flat()
 			.filter((teeTime) => teeTime !== undefined);
 
-		if (!teeTimes) return { ...prevState, error: "Scrape Function Failed" };
+		if (!teeTimes || teeTimes.length === 0) {
+			return { ...prevState, error: "No tee times found for the selected courses" };
+		}
 		return { teeTimes, error: "", isLoading: false };
 	} catch (e) {
 		console.log("Error when fetching", e);

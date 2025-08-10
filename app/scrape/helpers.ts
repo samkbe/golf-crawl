@@ -98,7 +98,7 @@ export async function scrapeForeUp(date: Date, url: string, courseName: string) 
 	// Example: https://foreupsoftware.com/index.php/booking/22221/10177#/teetimes`
 	puppeteer.use(StealthPlugin());
 	try {
-		const browser = await puppeteer.launch({ headless: true });
+		const browser = await puppeteer.launch({ headless: false });
 		const page = await browser.newPage();
 
 		await page.goto(url, { waitUntil: "domcontentloaded" });
