@@ -42,8 +42,6 @@ export async function fetchTeeTimes(
 			.filter(Boolean);
 	}
 
-	console.log("Selected Course: ", selectedCourses);
-
 	try {
 		const teeTimes = (
 			await Promise.allSettled(
@@ -65,10 +63,10 @@ export async function fetchTeeTimes(
 			)
 		)
 			.map((result) => {
-				if (result.status === 'fulfilled') {
+				if (result.status === "fulfilled") {
 					return result.value;
 				} else {
-					console.log('Course scraping failed:', result.reason);
+					console.log("Course scraping failed:", result.reason);
 					return undefined;
 				}
 			})

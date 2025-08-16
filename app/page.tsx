@@ -61,10 +61,11 @@ export default function Home() {
 	const [allSelected, setAllSelected] = useState(false);
 
 	return (
-		<div>
+		<div className="flex flex-col items-center p-2 min-h-screen justify-center">
+			<h1 className="mt-4 text-4xl font-bold">ATX Tee Times</h1>
 			<form
 				action={formAction}
-				className="max-w-2xl rounded-lg border p-4 mt-4 mx-2 md:mx-auto"
+				className="max-w-2xl rounded-lg p-4 mt-4 md:mx-auto bg-white/50 backdrop-blur-md"
 			>
 				<div>
 					<label htmlFor="date">Date:</label>
@@ -76,7 +77,7 @@ export default function Home() {
 				>
 					{courses.map(({ title, key }) => {
 						return (
-							<div className="basis-1/3" key={key}>
+							<div className="basis-1/2 md:basis-1/3" key={key}>
 								<input
 									className="mr-1"
 									id={key}
@@ -101,7 +102,11 @@ export default function Home() {
 					/>
 					<label htmlFor="all">All Courses</label>
 				</div>
-				<button className="p-2 border rounded-md w-full" disabled={pending} type="submit">
+				<button
+					className="p-2 border font-bold rounded-md w-full hover:bg-green-500 transition-colors duration-300"
+					disabled={pending}
+					type="submit"
+				>
 					{pending ? "Fetching Tee Times..." : "Find Tee Times"}
 				</button>
 			</form>

@@ -102,7 +102,7 @@ export function TeeTimeTable({ data, pending }: { data: TeeTime[]; pending: bool
 
 	return (
 		<>
-			<div className="border rounded-md my-4 mx-2 md:mx-auto max-w-2xl p-4">
+			<div className="rounded-md my-4 w-full mx-auto max-w-2xl p-4 bg-white/50 backdrop-blur-md">
 				<h2 className="text-center bold">Filters</h2>
 				<div>
 					{selectedCourses.map(({ course, active }) => {
@@ -159,9 +159,9 @@ export function TeeTimeTable({ data, pending }: { data: TeeTime[]; pending: bool
 					/>
 				</div>
 			</div>
-			<div className="overflow-x-auto border rounded-md mt-4 mb-8 mx-2 md:mx-auto max-w-2xl">
+			<div className="overflow-x-auto max-h-80 border rounded-md mb-8 max-w-2xl w-full bg-white/50 backdrop-blur-md">
 				<table className="min-w-full text-sm text-left border-collapse">
-					<thead className="bg-gray-200">
+					<thead className="bg-gray-200 sticky top-0 z-10">
 						{table.getHeaderGroups().map((headerGroup) => (
 							<tr key={headerGroup.id}>
 								{headerGroup.headers.map((header) => (
