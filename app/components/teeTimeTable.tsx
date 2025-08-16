@@ -103,8 +103,8 @@ export function TeeTimeTable({ data, pending }: { data: TeeTime[]; pending: bool
 	return (
 		<>
 			<div className="rounded-md my-4 w-full mx-auto max-w-2xl p-4 bg-white/50 backdrop-blur-md">
-				<h2 className="text-center bold">Filters</h2>
-				<div>
+				<h2 className="font-bold">Courses:</h2>
+				<div className="flex my-4 flex-wrap gap-2">
 					{selectedCourses.map(({ course, active }) => {
 						return (
 							<div
@@ -131,8 +131,8 @@ export function TeeTimeTable({ data, pending }: { data: TeeTime[]; pending: bool
 									});
 								}}
 								key={course}
-								className={`cursor-pointer p-2 rounded-xl border inline-block ${
-									active ? "bg-teal-300" : "bg-teal-50"
+								className={`cursor-pointer py-2 px-4 font-bold rounded-xl border inline-block ${
+									active ? "bg-green-700 text-white" : "bg-transparent text-black"
 								}`}
 							>
 								{course}
@@ -141,11 +141,12 @@ export function TeeTimeTable({ data, pending }: { data: TeeTime[]; pending: bool
 					})}
 				</div>
 				<div>
+					<h2 className="font-bold">Filters:</h2>
 					<label className="pr-5" htmlFor="maxPrice">
 						Max Price: ${maxPrice}
 					</label>
 					<input
-						className="pl-5 block"
+						className="pl-5 block accent-green-700"
 						id="maxPrice"
 						type="range"
 						min="0"
