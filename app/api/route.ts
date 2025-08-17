@@ -1,4 +1,4 @@
-import { scrapeGolfAtx } from "../scrape/golf-atx";
+import { scrapeGolfAtx } from "../scrape/courses/golf-atx";
 
 export async function GET(request: Request) {
 	try {

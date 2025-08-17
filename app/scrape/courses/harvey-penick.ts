@@ -1,4 +1,4 @@
-import { scrapeTeeItUp } from "./helpers";
+import scrapeTeeItUp from "../scrapeTeeItUp";
 
 export async function scrapeHarveyPenick(date: Date) {
 	try {

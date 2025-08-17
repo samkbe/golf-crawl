@@ -1,7 +1,7 @@
 import puppeteer from "puppeteer-extra";
 import StealthPlugin from "puppeteer-extra-plugin-stealth";
-import type { TeeTime } from "../types";
-import { cache } from "../cache";
+import type { TeeTime } from "../../types";
+import { cache } from "../../cache";
 
 const courseKeyMap: { [key: string]: string } = {
 	"Jimmy Clay Golf Course": "jimmyClay",

@@ -1,5 +1,5 @@
 "use server";
-import { scrapeGolfAtx } from "../app/scrape/golf-atx";
+import { scrapeGolfAtx } from "../app/scrape/courses/golf-atx";
 import { FetchTeeTimesState, TeeTime } from "./types";
 import { courses } from "./courses";
 import { cache } from "./cache";

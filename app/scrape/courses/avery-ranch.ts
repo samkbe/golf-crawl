@@ -1,4 +1,4 @@
-import { scrapeForeUp } from "./helpers";
+import scrapeForeUp from "../scrapeForeUp";
 
 export async function scrapeAveryRanch(date: Date) {
 	try {
