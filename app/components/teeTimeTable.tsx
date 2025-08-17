@@ -32,7 +32,10 @@ const columns = [
 	}),
 	columnHelper.accessor("price", {
 		header: "Price",
-		cell: (info) => info.getValue() ?? "N/A",
+		cell: (info) => {
+			const value = info.getValue();
+			return typeof value === "number" ? `$${value}` : "N/A";
+		},
 		filterFn: (row: any, columnId: string, filterValue: string[]) => {
 			if (typeof filterValue !== "number") return true;
 			const price = row.getValue(columnId);
@@ -40,9 +43,13 @@ const columns = [
 			return price <= filterValue;
 		},
 	}),
+	columnHelper.accessor("bookingLink", {
+		header: "Booking Link",
+	}),
 ];
 
 export function TeeTimeTable({ data, pending }: { data: TeeTime[]; pending: boolean }) {
+	console.log("data: ", data);
 	useEffect(() => {
 		const map: { [key: string]: boolean } = {};
 		for (let course of data) {
@@ -102,101 +109,116 @@ export function TeeTimeTable({ data, pending }: { data: TeeTime[]; pending: bool
 
 	return (
 		<>
-			<div className="rounded-md my-4 w-full mx-auto max-w-2xl p-4 bg-white/50 backdrop-blur-md">
-				<h2 className="font-bold">Courses:</h2>
-				<div className="flex my-4 flex-wrap gap-2">
-					{selectedCourses.map(({ course, active }) => {
-						return (
-							<div
-								onClick={() => {
-									setSelectedCourses((prevArr) => {
-										const newArr = prevArr.map((item) =>
-											item.course === course
-												? { ...item, active: !item.active }
-												: item
-										);
-
-										const activeCourses = newArr
-											.filter((item) => item.active)
-											.map((item) => item.course);
-
-										setColumnFilters([
-											{
-												id: "courseName",
-												value: activeCourses,
-											},
-										]);
-
-										return newArr;
-									});
-								}}
-								key={course}
-								className={`cursor-pointer py-2 px-4 font-bold rounded-xl border inline-block ${
-									active ? "bg-green-700 text-white" : "bg-transparent text-black"
-								}`}
-							>
-								{course}
-							</div>
-						);
-					})}
+			{pending ? (
+				<div className="rounded-md my-4 w-full mx-auto max-w-2xl p-4 bg-white/50 backdrop-blur-md animate-pulse-scale min-h-80 flex justify-center items-center">
+					<h2 className="text-center font-bold">
+						Loading Course Data. This may take a bit.
+					</h2>
 				</div>
-				<div>
-					<h2 className="font-bold">Filters:</h2>
-					<label className="pr-5" htmlFor="maxPrice">
-						Max Price: ${maxPrice}
-					</label>
-					<input
-						className="pl-5 block accent-green-700"
-						id="maxPrice"
-						type="range"
-						min="0"
-						max="500"
-						value={maxPrice}
-						onChange={(e) => {
-							const newMax = Number(e.target.value);
-							setMaxPrice(newMax);
-							updatePriceFilter(newMax);
-						}}
-					/>
-				</div>
-			</div>
-			<div className="overflow-x-auto max-h-80 border rounded-md mb-8 max-w-2xl w-full bg-white/50 backdrop-blur-md">
-				<table className="min-w-full text-sm text-left border-collapse">
-					<thead className="bg-gray-200 sticky top-0 z-10">
-						{table.getHeaderGroups().map((headerGroup) => (
-							<tr key={headerGroup.id}>
-								{headerGroup.headers.map((header) => (
-									<th
-										key={header.id}
-										className="p-2 cursor-pointer"
-										onClick={header.column.getToggleSortingHandler()}
+			) : (
+				<>
+					<div className="rounded-md my-4 w-full mx-auto max-w-2xl p-4 bg-white/50 backdrop-blur-md">
+						<h2 className="font-bold">Courses:</h2>
+						<div className="flex my-4 flex-wrap gap-2">
+							{selectedCourses.map(({ course, active }) => {
+								return (
+									<div
+										onClick={() => {
+											setSelectedCourses((prevArr) => {
+												const newArr = prevArr.map((item) =>
+													item.course === course
+														? { ...item, active: !item.active }
+														: item
+												);
+
+												const activeCourses = newArr
+													.filter((item) => item.active)
+													.map((item) => item.course);
+
+												setColumnFilters([
+													{
+														id: "courseName",
+														value: activeCourses,
+													},
+												]);
+
+												return newArr;
+											});
+										}}
+										key={course}
+										className={`cursor-pointer py-2 px-4 font-bold rounded-xl border inline-block ${
+											active
+												? "bg-green-700 text-white"
+												: "bg-transparent text-black"
+										}`}
 									>
-										{flexRender(
-											header.column.columnDef.header,
-											header.getContext()
-										)}
-										{{
-											asc: " 🔼",
-											desc: " 🔽",
-										}[header.column.getIsSorted() as string] ?? null}
-									</th>
+										{course}
+									</div>
+								);
+							})}
+						</div>
+						<div>
+							<h2 className="font-bold">Filters:</h2>
+							<label className="pr-5" htmlFor="maxPrice">
+								Max Price: ${maxPrice}
+							</label>
+							<input
+								className="pl-5 block accent-green-700"
+								id="maxPrice"
+								type="range"
+								min="0"
+								max="500"
+								value={maxPrice}
+								onChange={(e) => {
+									const newMax = Number(e.target.value);
+									setMaxPrice(newMax);
+									updatePriceFilter(newMax);
+								}}
+							/>
+						</div>
+					</div>
+					<div className="overflow-x-auto max-h-80 border rounded-md mb-8 max-w-2xl w-full bg-white/50 backdrop-blur-md">
+						<table className="min-w-full text-sm text-left border-collapse">
+							<thead className="bg-gray-200 sticky top-0 z-10">
+								{table.getHeaderGroups().map((headerGroup) => (
+									<tr key={headerGroup.id}>
+										{headerGroup.headers.map((header) => (
+											<th
+												key={header.id}
+												className="p-2 cursor-pointer"
+												onClick={header.column.getToggleSortingHandler()}
+											>
+												{flexRender(
+													header.column.columnDef.header,
+													header.getContext()
+												)}
+												{{
+													asc: " 🔼",
+													desc: " 🔽",
+												}[header.column.getIsSorted() as string] ?? null}
+											</th>
+										))}
+									</tr>
 								))}
-							</tr>
-						))}
-					</thead>
-					<tbody>
-						{table.getRowModel().rows.map((row) => (
-							<tr key={row.id} className="border-t">
-								{row.getVisibleCells().map((cell) => (
-									<td key={cell.id} className="p-2">
-										{flexRender(cell.column.columnDef.cell, cell.getContext())}
-									</td>
+							</thead>
+							<tbody>
+								{table.getRowModel().rows.map((row) => (
+									<tr key={row.id} className="border-t">
+										{row.getVisibleCells().map((cell) => (
+											<td key={cell.id} className="p-2">
+												{flexRender(
+													cell.column.columnDef.cell,
+													cell.getContext()
+												)}
+											</td>
+										))}
+									</tr>
 								))}
-							</tr>
-						))}
-					</tbody>
-				</table>
-			</div>
+							</tbody>
+						</table>
+					</div>
+				</>
+			)}
 		</>
 	);
 }

@@ -79,7 +79,7 @@ export default function Home() {
 						return (
 							<div className="basis-1/2 md:basis-1/3" key={key}>
 								<input
-									className="mr-1"
+									className="mr-1 accent-green-700"
 									id={key}
 									type="checkbox"
 									value={key}
