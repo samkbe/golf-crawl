@@ -21,10 +21,6 @@ const courses = [
 		title: "Falconhead",
 		key: "falconhead",
 	},
-	// {
-	// 	title: "Riverside",
-	// 	key: "riverside",
-	// },
 	{
 		title: "Avery Ranch",
 		key: "averyRanch",
@@ -113,17 +109,6 @@ export default function Home() {
 			<TeeTimeTable data={state.teeTimes} pending={pending} />
 		</div>
 	);
-}
-
-function formatDate(date: Date): string {
-	return new Intl.DateTimeFormat("en-US", {
-		timeZone: "America/Chicago",
-		month: "long",
-		day: "numeric",
-		hour: "numeric",
-		minute: "2-digit",
-		hour12: true,
-	}).format(new Date(date));
 }
 
 // Golf ATX - Random

@@ -1,4 +1,4 @@
-import { fromZonedTime, toZonedTime, formatInTimeZone } from "date-fns-tz";
+import { fromZonedTime } from "date-fns-tz";
 
 const TZ = "America/Chicago";
 
@@ -8,7 +8,7 @@ function parseTime12h(input: string): { hour: number; minute: number } {
 		.toUpperCase()
 		.match(/^(\d{1,2})(?::(\d{2}))?\s*([AP]M)$/);
 	if (!m) throw new Error(`Invalid time: ${input}`);
-	let [, hStr, minStr = "00", mer] = m;
+	const [, hStr, minStr = "00", mer] = m;
 	let hour = parseInt(hStr, 10) % 12;
 	if (mer === "PM") hour += 12;
 	const minute = parseInt(minStr, 10);

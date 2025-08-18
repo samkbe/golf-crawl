@@ -3,12 +3,7 @@ import StealthPlugin from "puppeteer-extra-plugin-stealth";
 import type { TeeTime } from "../types";
 import { mergeDateWithTime } from "./helpers";
 
-export default async function scrapeTeeItUp(
-	date: string,
-	url: string,
-	courseName: string,
-	bookingLink?: string
-) {
+export default async function scrapeTeeItUp(date: string, url: string, courseName: string) {
 	// READ: url must not contain any url params besides 'course'
 	// Example: https://crystal-falls-golf-club-2.book.teeitup.com/?course=5741`
 

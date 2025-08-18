@@ -1,6 +1,6 @@
 import { scrapeGolfAtx } from "../scrape/courses/golf-atx";
 
-export async function GET(request: Request) {
+export async function GET() {
 	try {
 		const tomorrow = new Date();
 		tomorrow.setDate(tomorrow.getDate() + 1);
@@ -11,7 +11,7 @@ export async function GET(request: Request) {
 			status: 200,
 			headers: { "Content-Type": "application/json" },
 		});
-	} catch (error) {
+	} catch {
 		return new Response("Error scraping data", { status: 500 });
 	}
 }

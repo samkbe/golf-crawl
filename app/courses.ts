@@ -3,7 +3,6 @@ import { scrapeCrystalFalls } from "./scrape/courses/crystal-falls";
 import { scrapeShadowGlen } from "./scrape/courses/shadow-glen";
 import { scrapeHarveyPenick } from "./scrape/courses/harvey-penick";
 import { scrapeFalconhead } from "./scrape/courses/falconhead";
-import { scrapeRiverside } from "./scrape/courses/riverside";
 import { scrapeAveryRanch } from "./scrape/courses/avery-ranch";
 import { scrapeTeravista } from "./scrape/courses/teravista";
 import { golfAtxResults } from "./scrape/courses/golf-atx";
@@ -20,7 +19,6 @@ export const courses: course[] = [
 	{ title: "Shadowglen", key: "shadowGlen", fetchFunction: scrapeShadowGlen },
 	{ title: "Harvey Penick", key: "harveyPenick", fetchFunction: scrapeHarveyPenick },
 	{ title: "Falconhead", key: "falconhead", fetchFunction: scrapeFalconhead },
-	// { title: "Riverside", key: "riverside", fetchFunction: scrapeRiverside },
 	{ title: "Avery Ranch", key: "averyRanch", fetchFunction: scrapeAveryRanch },
 	{ title: "Teravista", key: "teravista", fetchFunction: scrapeTeravista },
 	{ title: "Lions", key: "lions", golfAtxCourse: true, fetchFunction: golfAtxResults },

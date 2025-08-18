@@ -6,6 +6,7 @@ import {
 	flexRender,
 	createColumnHelper,
 	getFilteredRowModel,
+	Row,
 } from "@tanstack/react-table";
 import { useState, useEffect } from "react";
 import type { TeeTime } from "../types";
@@ -16,7 +17,7 @@ const columnHelper = createColumnHelper<TeeTime>();
 const columns = [
 	columnHelper.accessor("courseName", {
 		header: "Course",
-		filterFn: (row: any, columnId: string, filterValue: string[]) => {
+		filterFn: (row: Row<TeeTime>, columnId: string, filterValue: string[]) => {
 			if (!Array.isArray(filterValue)) return true;
 			return filterValue.includes(row.getValue(columnId));
 		},
@@ -36,7 +37,7 @@ const columns = [
 			const value = info.getValue();
 			return typeof value === "number" ? `$${value}` : "N/A";
 		},
-		filterFn: (row: any, columnId: string, filterValue: string[]) => {
+		filterFn: (row: Row<TeeTime>, columnId: string, filterValue: string[]) => {
 			if (typeof filterValue !== "number") return true;
 			const price = row.getValue(columnId);
 			if (typeof price !== "number") return false;
@@ -65,10 +66,9 @@ const columns = [
 ];
 
 export function TeeTimeTable({ data, pending }: { data: TeeTime[]; pending: boolean }) {
-	console.log("data: ", data);
 	useEffect(() => {
 		const map: { [key: string]: boolean } = {};
-		for (let course of data) {
+		for (const course of data) {
 			if (!map[course.courseName]) {
 				map[course.courseName] = true;
 			}
