@@ -3,6 +3,7 @@
 import type { TeeTime } from "../../types";
 import { cache } from "../../cache";
 import { toMmDdYyyy } from "../helpers";
+import type { PuppeteerExtraPlugin } from "puppeteer-extra-plugin";
 
 const courseKeyMap: { [key: string]: string } = {
 	"Jimmy Clay Golf Course": "jimmyClay",
@@ -13,7 +14,12 @@ const courseKeyMap: { [key: string]: string } = {
 
 export async function scrapeGolfAtx(targetDate: string) {
 	const { default: puppeteer } = await import("puppeteer-extra");
-	const { default: StealthPlugin } = await import("puppeteer-extra-plugin-stealth");
+
+	const r: NodeRequire = eval("require");
+	const stealthPkg = r("puppeteer-extra-plugin-stealth");
+	const StealthPlugin = (stealthPkg.default ?? stealthPkg) as () => PuppeteerExtraPlugin;
+
+	puppeteer.use(StealthPlugin());
 
 	try {
 		// Launch Puppeteer

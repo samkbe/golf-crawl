@@ -2,6 +2,7 @@
 // import StealthPlugin from "puppeteer-extra-plugin-stealth";
 import type { TeeTime } from "../types";
 import type { ElementHandle } from "puppeteer";
+import type { PuppeteerExtraPlugin } from "puppeteer-extra-plugin";
 import { mergeDateWithTimeAlt, toMmDdYyyyDash } from "./helpers";
 
 const RESULTS_SEL = ".time-tile, .time-tile-ob-no-details";
@@ -18,9 +19,13 @@ export default async function scrapeForeUp(
 	// Example: https://foreupsoftware.com/index.php/booking/22221/10177#/teetimes`
 
 	const { default: puppeteer } = await import("puppeteer-extra");
-	const { default: StealthPlugin } = await import("puppeteer-extra-plugin-stealth");
+
+	const r: NodeRequire = eval("require");
+	const stealthPkg = r("puppeteer-extra-plugin-stealth");
+	const StealthPlugin = (stealthPkg.default ?? stealthPkg) as () => PuppeteerExtraPlugin;
 
 	puppeteer.use(StealthPlugin());
+
 	const browser = await puppeteer.launch({ headless: true });
 	const page = await browser.newPage();
 	try {
