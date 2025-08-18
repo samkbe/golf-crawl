@@ -17,7 +17,7 @@ export default async function scrapeForeUp(
 	// READ: url must not contain any url params
 	// Example: https://foreupsoftware.com/index.php/booking/22221/10177#/teetimes`
 	puppeteer.use(StealthPlugin());
-	const browser = await puppeteer.launch({ headless: false });
+	const browser = await puppeteer.launch({ headless: true });
 	const page = await browser.newPage();
 	try {
 		await page.goto(url, { waitUntil: "domcontentloaded" });
