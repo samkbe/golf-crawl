@@ -1,5 +1,3 @@
-// import puppeteer from "puppeteer-extra";
-// import StealthPlugin from "puppeteer-extra-plugin-stealth";
 import type { TeeTime } from "../../types";
 import { cache } from "../../cache";
 import { toMmDdYyyy } from "../helpers";
@@ -14,16 +12,12 @@ const courseKeyMap: { [key: string]: string } = {
 
 export async function scrapeGolfAtx(targetDate: string) {
 	const { default: puppeteer } = await import("puppeteer-extra");
-
-	const r: NodeRequire = eval("require");
-	const stealthPkg = r("puppeteer-extra-plugin-stealth");
-	const StealthPlugin = (stealthPkg.default ?? stealthPkg) as () => PuppeteerExtraPlugin;
-
-	puppeteer.use(StealthPlugin());
+	const { default: stealthFactory } = await import("puppeteer-extra-plugin-stealth");
+	const makeStealth = stealthFactory as (opts?: Record<string, unknown>) => PuppeteerExtraPlugin;
 
 	try {
 		// Launch Puppeteer
-		puppeteer.use(StealthPlugin());
+		puppeteer.use(makeStealth());
 		const browser = await puppeteer.launch({ headless: true });
 		const page = await browser.newPage();
 
@@ -131,16 +125,6 @@ export async function scrapeGolfAtx(targetDate: string) {
 		throw new Error("Failed");
 	}
 }
-
-// const hasDuplicates = (arr: { date: Date; openSlots: string; courseName: string }[]) => {
-//   const seen = new Set();
-//   for (const item of arr) {
-//     const key = `${item.date}|${item.courseName}`;
-//     if (seen.has(key)) return true;
-//     seen.add(key);
-//   }
-//   return false;
-// };
 
 export async function golfAtxResults(targetDate: string, key?: string) {
 	const cacheKey = `${targetDate}::golfAtx`;
