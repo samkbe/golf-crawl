@@ -1,9 +1,14 @@
-import puppeteer from "puppeteer-extra";
-import StealthPlugin from "puppeteer-extra-plugin-stealth";
+// import puppeteer from "puppeteer-extra";
+// import StealthPlugin from "puppeteer-extra-plugin-stealth";
 import type { TeeTime } from "../types";
 import { mergeDateWithTime } from "./helpers";
 
+export const runtime = "nodejs";
+
 export default async function scrapeTeeItUp(date: string, url: string, courseName: string) {
+	const { default: puppeteer } = await import("puppeteer-extra");
+	const { default: StealthPlugin } = await import("puppeteer-extra-plugin-stealth");
+
 	// READ: url must not contain any url params besides 'course'
 	// Example: https://crystal-falls-golf-club-2.book.teeitup.com/?course=5741`
 

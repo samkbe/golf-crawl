@@ -1,5 +1,5 @@
-import puppeteer from "puppeteer-extra";
-import StealthPlugin from "puppeteer-extra-plugin-stealth";
+// import puppeteer from "puppeteer-extra";
+// import StealthPlugin from "puppeteer-extra-plugin-stealth";
 import type { TeeTime } from "../types";
 import { ElementHandle } from "puppeteer";
 import { mergeDateWithTimeAlt, toMmDdYyyyDash } from "./helpers";
@@ -7,6 +7,7 @@ import { mergeDateWithTimeAlt, toMmDdYyyyDash } from "./helpers";
 const RESULTS_SEL = ".time-tile, .time-tile-ob-no-details";
 const DATE_INPUT = "input[name='date']";
 const TIMES_PATH = "/index.php/api/booking/times";
+export const runtime = "nodejs";
 
 export default async function scrapeForeUp(
 	date: string,
@@ -16,6 +17,10 @@ export default async function scrapeForeUp(
 ) {
 	// READ: url must not contain any url params
 	// Example: https://foreupsoftware.com/index.php/booking/22221/10177#/teetimes`
+
+	const { default: puppeteer } = await import("puppeteer-extra");
+	const { default: StealthPlugin } = await import("puppeteer-extra-plugin-stealth");
+
 	puppeteer.use(StealthPlugin());
 	const browser = await puppeteer.launch({ headless: true });
 	const page = await browser.newPage();
