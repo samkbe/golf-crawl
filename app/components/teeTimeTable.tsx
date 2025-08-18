@@ -45,6 +45,22 @@ const columns = [
 	}),
 	columnHelper.accessor("bookingLink", {
 		header: "Booking Link",
+		enableSorting: false,
+		cell: (info) => {
+			const href = info.getValue<string | null | undefined>();
+			if (!href) return <span className="text-gray-400">N/A</span>;
+
+			return (
+				<a
+					href={href}
+					target="_blank"
+					rel="noopener noreferrer"
+					className="inline-flex items-center rounded-md border px-3 py-1.5 text-sm font-medium shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2"
+				>
+					Book
+				</a>
+			);
+		},
 	}),
 ];
 
