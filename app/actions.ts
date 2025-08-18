@@ -2,8 +2,7 @@
 import { FetchTeeTimesState, TeeTime } from "./types";
 import { courses } from "./courses";
 import { cache } from "./cache";
-
-// export const runtime = "nodejs";
+import "puppeteer-extra-plugin-stealth";
 
 export async function fetchTeeTimes(
 	prevState: FetchTeeTimesState,

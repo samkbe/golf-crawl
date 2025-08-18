@@ -17,10 +17,13 @@ export default async function scrapeForeUp(
 	// Example: https://foreupsoftware.com/index.php/booking/22221/10177#/teetimes`
 
 	const { default: puppeteer } = await import("puppeteer-extra");
-	const { default: stealthFactory } = await import("puppeteer-extra-plugin-stealth");
+	const r: NodeRequire = eval("require");
+	const mod = r("puppeteer-extra-plugin-stealth");
+	const stealthFactory = (mod.default ?? mod) as (
+		opts?: Record<string, unknown>
+	) => PuppeteerExtraPlugin;
 
-	const makeStealth = stealthFactory as (opts?: Record<string, unknown>) => PuppeteerExtraPlugin;
-	puppeteer.use(makeStealth());
+	puppeteer.use(stealthFactory());
 
 	const browser = await puppeteer.launch({ headless: true });
 	const page = await browser.newPage();

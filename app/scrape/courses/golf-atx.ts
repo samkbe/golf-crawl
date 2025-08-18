@@ -12,12 +12,15 @@ const courseKeyMap: { [key: string]: string } = {
 
 export async function scrapeGolfAtx(targetDate: string) {
 	const { default: puppeteer } = await import("puppeteer-extra");
-	const { default: stealthFactory } = await import("puppeteer-extra-plugin-stealth");
-	const makeStealth = stealthFactory as (opts?: Record<string, unknown>) => PuppeteerExtraPlugin;
+	const r: NodeRequire = eval("require");
+	const mod = r("puppeteer-extra-plugin-stealth");
+	const stealthFactory = (mod.default ?? mod) as (
+		opts?: Record<string, unknown>
+	) => PuppeteerExtraPlugin;
 
 	try {
 		// Launch Puppeteer
-		puppeteer.use(makeStealth());
+		puppeteer.use(stealthFactory());
 		const browser = await puppeteer.launch({ headless: true });
 		const page = await browser.newPage();
 
