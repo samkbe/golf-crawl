@@ -1,17 +1,13 @@
-import { scrapeGolfAtx } from "../scrape/courses/golf-atx";
+// import { json } from "stream/consumers";
+
+export const runtime = "nodejs";
 
 export async function GET() {
 	try {
-		const tomorrow = new Date();
-		tomorrow.setDate(tomorrow.getDate() + 1);
-
-		const teeTimes = await scrapeGolfAtx("08-29-2025");
-
-		return new Response(JSON.stringify(teeTimes), {
-			status: 200,
-			headers: { "Content-Type": "application/json" },
-		});
-	} catch {
-		return new Response("Error scraping data", { status: 500 });
+		// If this resolves, the plugin’s subpath files are on disk at runtime
+		const path = require.resolve("puppeteer-extra-plugin-stealth/evasions/chrome.app");
+		return new Response(`ok: ${path}`);
+	} catch (e) {
+		return new Response(`fail: ${JSON.stringify(e)}`, { status: 500 });
 	}
 }

@@ -11,8 +11,6 @@ const courseKeyMap: { [key: string]: string } = {
 	"Lions Municipal Golf Course": "lions",
 };
 
-export const runtime = "nodejs";
-
 export async function scrapeGolfAtx(targetDate: string) {
 	const { default: puppeteer } = await import("puppeteer-extra");
 	const { default: StealthPlugin } = await import("puppeteer-extra-plugin-stealth");

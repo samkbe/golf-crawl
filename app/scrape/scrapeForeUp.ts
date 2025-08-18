@@ -1,13 +1,12 @@
 // import puppeteer from "puppeteer-extra";
 // import StealthPlugin from "puppeteer-extra-plugin-stealth";
 import type { TeeTime } from "../types";
-import { ElementHandle } from "puppeteer";
+import type { ElementHandle } from "puppeteer";
 import { mergeDateWithTimeAlt, toMmDdYyyyDash } from "./helpers";
 
 const RESULTS_SEL = ".time-tile, .time-tile-ob-no-details";
 const DATE_INPUT = "input[name='date']";
 const TIMES_PATH = "/index.php/api/booking/times";
-export const runtime = "nodejs";
 
 export default async function scrapeForeUp(
 	date: string,
