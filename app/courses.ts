@@ -20,7 +20,7 @@ export const courses: course[] = [
 	{ title: "Shadowglen", key: "shadowGlen", fetchFunction: scrapeShadowGlen },
 	{ title: "Harvey Penick", key: "harveyPenick", fetchFunction: scrapeHarveyPenick },
 	{ title: "Falconhead", key: "falconhead", fetchFunction: scrapeFalconhead },
-	{ title: "Riverside", key: "riverside", fetchFunction: scrapeRiverside },
+	// { title: "Riverside", key: "riverside", fetchFunction: scrapeRiverside },
 	{ title: "Avery Ranch", key: "averyRanch", fetchFunction: scrapeAveryRanch },
 	{ title: "Teravista", key: "teravista", fetchFunction: scrapeTeravista },
 	{ title: "Lions", key: "lions", golfAtxCourse: true, fetchFunction: golfAtxResults },

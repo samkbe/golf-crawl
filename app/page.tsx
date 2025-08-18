@@ -21,10 +21,10 @@ const courses = [
 		title: "Falconhead",
 		key: "falconhead",
 	},
-	{
-		title: "Riverside",
-		key: "riverside",
-	},
+	// {
+	// 	title: "Riverside",
+	// 	key: "riverside",
+	// },
 	{
 		title: "Avery Ranch",
 		key: "averyRanch",

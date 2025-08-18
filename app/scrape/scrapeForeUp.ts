@@ -1,8 +1,12 @@
 import puppeteer from "puppeteer-extra";
 import StealthPlugin from "puppeteer-extra-plugin-stealth";
 import type { TeeTime } from "../types";
-import { ElementHandle } from "puppeteer";
-import { mergeDateWithTimeAlt } from "./helpers";
+import { ElementHandle, Page } from "puppeteer";
+import { mergeDateWithTimeAlt, toMmDdYyyyDash } from "./helpers";
+
+const RESULTS_SEL = ".time-tile, .time-tile-ob-no-details";
+const DATE_INPUT = "input[name='date']";
+const TIMES_PATH = "/index.php/api/booking/times";
 
 export default async function scrapeForeUp(
 	date: string,
@@ -12,50 +16,75 @@ export default async function scrapeForeUp(
 ) {
 	// READ: url must not contain any url params
 	// Example: https://foreupsoftware.com/index.php/booking/22221/10177#/teetimes`
-	puppeteer.use(StealthPlugin());
+	const browser = await puppeteer.launch({ headless: false });
+	const page = await browser.newPage();
 	try {
-		const browser = await puppeteer.launch({ headless: true });
-		const page = await browser.newPage();
-
 		await page.goto(url, { waitUntil: "domcontentloaded" });
 
-		await page.waitForSelector(".online-booking-content button.btn.btn-primary");
-
-		const buttons = await page.$$(".online-booking-content button.btn.btn-primary");
-
-		for (const button of buttons) {
-			const text = await page.evaluate((el) => el.textContent?.trim(), button);
-
-			if (text === "Public") {
-				await button.click();
+		// Click "Public" if present
+		await page
+			.waitForSelector(".online-booking-content button.btn.btn-primary", { timeout: 10000 })
+			.catch(() => {});
+		for (const btn of await page.$$(".online-booking-content button.btn.btn-primary")) {
+			const text = await page.evaluate((el) => el.textContent?.trim().toLowerCase(), btn);
+			if (text === "public") {
+				await btn.click();
 				break;
 			}
 		}
 
-		await new Promise((resolve) => setTimeout(resolve, 2000));
+		const mmddyyyy = toMmDdYyyyDash(date);
 
-		// Check which design version is present
-		const hasOldDesign = (await page.$(".time-tile")) !== null;
-		const hasNewDesign = (await page.$(".time-tile-ob-no-details")) !== null;
+		await page.waitForSelector(DATE_INPUT, { visible: true });
+		await page.$eval(
+			DATE_INPUT,
+			(el, value) => {
+				const input = el as HTMLInputElement;
+				input.value = value as string;
+				input.dispatchEvent(new Event("input", { bubbles: true }));
+				input.dispatchEvent(new Event("change", { bubbles: true }));
+			},
+			mmddyyyy
+		);
 
+		// focus then press Enter while we wait for the exact XHR for that date
+		await page.focus(DATE_INPUT);
+		await Promise.all([
+			page.keyboard.press("Enter"),
+			page.waitForResponse(
+				(res) => {
+					if (!res.ok()) return false;
+					try {
+						const u = new URL(res.url());
+						return (
+							u.pathname.endsWith(TIMES_PATH) &&
+							u.searchParams.get("date") === mmddyyyy
+						);
+					} catch {
+						return false;
+					}
+				},
+				{ timeout: 20000 }
+			),
+		]);
+
+		// Ensure results are rendered (if you’re parsing the DOM instead of the JSON)
+		await page.waitForSelector(RESULTS_SEL, { timeout: 20000 });
+
+		// ---- Parse either layout (use your existing parsers) ----
 		let teeTimes: TeeTime[] = [];
-
-		if (hasOldDesign) {
-			await page.waitForSelector(".time-tile");
-			const bookingPanels = await page.$$(".time-tile");
-			teeTimes = await parseForeUpTiles(bookingPanels, date, courseName, bookingLink);
-		} else if (hasNewDesign) {
-			await page.waitForSelector(".time-tile-ob-no-details");
-			const bookingPanels = await page.$$(".time-tile-ob-no-details");
-			teeTimes = await parseForeUpRows(bookingPanels, date, courseName, bookingLink);
+		const oldPanels = await page.$$(".time-tile");
+		if (oldPanels.length > 0) {
+			teeTimes = await parseForeUpTiles(oldPanels, date, courseName, bookingLink);
 		} else {
-			throw new Error("Could not find any supported ForeUp design elements");
+			const newPanels = await page.$$(".time-tile-ob-no-details");
+			if (newPanels.length === 0)
+				throw new Error("No tee time elements found after date change.");
+			teeTimes = await parseForeUpRows(newPanels, date, courseName, bookingLink);
 		}
-		await browser.close();
 		return teeTimes;
-	} catch (e) {
-		console.log(e);
-		throw new Error("Failed");
+	} finally {
+		await browser.close();
 	}
 }
 

@@ -5,7 +5,8 @@ export async function scrapeRiverside(date: string) {
 		return await scrapeForeUp(
 			date,
 			"https://foreupsoftware.com/index.php/booking/21469/7880#/teetimes",
-			"Riverside"
+			"Riverside",
+			"https://foreupsoftware.com/index.php/booking/21469/7880#/teetimes"
 		);
 	} catch (e) {
 		console.log(e);

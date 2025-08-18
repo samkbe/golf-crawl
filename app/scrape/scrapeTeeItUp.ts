@@ -18,9 +18,11 @@ export default async function scrapeTeeItUp(
 		const browser = await puppeteer.launch({ headless: true });
 		const page = await browser.newPage();
 
-		// const formattedDate = date.toISOString().split("T")[0];
+		const u = new URL(url);
+		u.searchParams.set("date", date);
+		u.searchParams.set("max", "9999");
 
-		await page.goto(`${url}&date=${date}&max=9999`);
+		await page.goto(u.toString());
 
 		const bookingPanelSelector =
 			'div[role="group"]:has(> div button[data-testid="teetimes_book_now_button"], > div button[data-testid="teetimes_choose_rate_button"])';
@@ -87,7 +89,7 @@ export default async function scrapeTeeItUp(
 				courseName,
 				openSlots,
 				price,
-				bookingLink,
+				bookingLink: u.toString(),
 			});
 		}
 

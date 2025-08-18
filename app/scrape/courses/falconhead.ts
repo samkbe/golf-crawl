@@ -5,7 +5,8 @@ export async function scrapeFalconhead(date: string) {
 		return await scrapeForeUp(
 			date,
 			"https://foreupsoftware.com/index.php/booking/22221/10177#/teetimes",
-			"Falconhead"
+			"Falconhead",
+			"https://foreupsoftware.com/index.php/booking/22221/10177#/teetimes"
 		);
 	} catch (e) {
 		console.log(e);
