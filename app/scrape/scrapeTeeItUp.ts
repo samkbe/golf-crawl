@@ -4,7 +4,7 @@ import type { TeeTime } from "../types";
 import { mergeDateWithTime } from "./helpers";
 
 export default async function scrapeTeeItUp(
-	date: Date,
+	date: string,
 	url: string,
 	courseName: string,
 	bookingLink?: string
@@ -18,9 +18,9 @@ export default async function scrapeTeeItUp(
 		const browser = await puppeteer.launch({ headless: true });
 		const page = await browser.newPage();
 
-		const formattedDate = date.toISOString().split("T")[0];
+		// const formattedDate = date.toISOString().split("T")[0];
 
-		await page.goto(`${url}&date=${formattedDate}&max=9999`);
+		await page.goto(`${url}&date=${date}&max=9999`);
 
 		const bookingPanelSelector =
 			'div[role="group"]:has(> div button[data-testid="teetimes_book_now_button"], > div button[data-testid="teetimes_choose_rate_button"])';
@@ -71,7 +71,6 @@ export default async function scrapeTeeItUp(
 			const price = await bookingPanel.$$eval(
 				"p.MuiTypography-root.MuiTypography-body1",
 				(elements) => {
-					console.log("ELEMENTS: ", elements);
 					for (const el of elements) {
 						if (el.textContent?.includes("$")) {
 							return parseFloat(el.textContent.replace(/[$,]/g, ""));

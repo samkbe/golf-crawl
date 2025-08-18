@@ -1,6 +1,6 @@
 import scrapeForeUp from "../scrapeForeUp";
 
-export async function scrapeTeravista(date: Date) {
+export async function scrapeTeravista(date: string) {
 	try {
 		return await scrapeForeUp(
 			date,

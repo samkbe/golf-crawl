@@ -1,6 +1,6 @@
 import scrapeForeUp from "../scrapeForeUp";
 
-export async function scrapeFalconhead(date: Date) {
+export async function scrapeFalconhead(date: string) {
 	try {
 		return await scrapeForeUp(
 			date,

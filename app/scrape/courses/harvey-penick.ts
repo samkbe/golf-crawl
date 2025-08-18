@@ -1,6 +1,6 @@
 import scrapeTeeItUp from "../scrapeTeeItUp";
 
-export async function scrapeHarveyPenick(date: Date) {
+export async function scrapeHarveyPenick(date: string) {
 	try {
 		return await scrapeTeeItUp(
 			date,

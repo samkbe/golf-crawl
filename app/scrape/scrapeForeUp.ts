@@ -5,7 +5,7 @@ import { ElementHandle } from "puppeteer";
 import { mergeDateWithTimeAlt } from "./helpers";
 
 export default async function scrapeForeUp(
-	date: Date,
+	date: string,
 	url: string,
 	courseName: string,
 	bookingLink?: string
@@ -27,9 +27,7 @@ export default async function scrapeForeUp(
 			const text = await page.evaluate((el) => el.textContent?.trim(), button);
 
 			if (text === "Public") {
-				console.log("Found Public button, clicking...");
 				await button.click();
-				console.log("Clicked Public button");
 				break;
 			}
 		}
@@ -45,15 +43,14 @@ export default async function scrapeForeUp(
 		if (hasOldDesign) {
 			await page.waitForSelector(".time-tile");
 			const bookingPanels = await page.$$(".time-tile");
-			teeTimes = await parseForeUpTiles(bookingPanels, date, courseName);
+			teeTimes = await parseForeUpTiles(bookingPanels, date, courseName, bookingLink);
 		} else if (hasNewDesign) {
 			await page.waitForSelector(".time-tile-ob-no-details");
 			const bookingPanels = await page.$$(".time-tile-ob-no-details");
-			teeTimes = await parseForeUpRows(bookingPanels, date, courseName);
+			teeTimes = await parseForeUpRows(bookingPanels, date, courseName, bookingLink);
 		} else {
 			throw new Error("Could not find any supported ForeUp design elements");
 		}
-
 		await browser.close();
 		return teeTimes;
 	} catch (e) {
@@ -64,7 +61,7 @@ export default async function scrapeForeUp(
 
 async function parseForeUpTiles(
 	elements: ElementHandle<Element>[],
-	date: Date,
+	date: string,
 	courseName: string,
 	bookingLink?: string
 ): Promise<TeeTime[]> {
@@ -111,7 +108,7 @@ async function parseForeUpTiles(
 
 async function parseForeUpRows(
 	elements: ElementHandle<Element>[],
-	date: Date,
+	date: string,
 	courseName: string,
 	bookingLink?: string
 ): Promise<TeeTime[]> {

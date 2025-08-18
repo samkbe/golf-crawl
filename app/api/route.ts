@@ -5,7 +5,7 @@ export async function GET(request: Request) {
 		const tomorrow = new Date();
 		tomorrow.setDate(tomorrow.getDate() + 1);
 
-		const teeTimes = await scrapeGolfAtx(tomorrow);
+		const teeTimes = await scrapeGolfAtx("08-29-2025");
 
 		return new Response(JSON.stringify(teeTimes), {
 			status: 200,

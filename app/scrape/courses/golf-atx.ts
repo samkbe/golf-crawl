@@ -2,6 +2,7 @@ import puppeteer from "puppeteer-extra";
 import StealthPlugin from "puppeteer-extra-plugin-stealth";
 import type { TeeTime } from "../../types";
 import { cache } from "../../cache";
+import { toMmDdYyyy } from "../helpers";
 
 const courseKeyMap: { [key: string]: string } = {
 	"Jimmy Clay Golf Course": "jimmyClay",
@@ -10,7 +11,7 @@ const courseKeyMap: { [key: string]: string } = {
 	"Lions Municipal Golf Course": "lions",
 };
 
-export async function scrapeGolfAtx(targetDate: Date) {
+export async function scrapeGolfAtx(targetDate: string) {
 	try {
 		// Launch Puppeteer
 		puppeteer.use(StealthPlugin());
@@ -34,19 +35,19 @@ export async function scrapeGolfAtx(targetDate: Date) {
 			return;
 		}
 
-		// Step 2: Prepare the booking URL with CSRF token and dynamic date
-		const formattedDate = `${
-			targetDate.getMonth() + 1
-		}/${targetDate.getDate()}/${targetDate.getFullYear()}`;
-
-		const bookingUrl = `https://txaustinweb.myvscloud.com/webtrac/web/search.html?Action=Start&begindate=${encodeURIComponent(
-			formattedDate
-		)}&begintime=07:00+am&numberofplayers=1&numberofholes=18&_csrf_token=${csrfToken}&module=GR`;
-
-		console.log("BOOKING URL: ", bookingUrl);
+		const bookingUrl = new URL("https://txaustinweb.myvscloud.com/webtrac/web/search.html");
+		bookingUrl.search = new URLSearchParams({
+			Action: "Start",
+			begindate: toMmDdYyyy(targetDate),
+			begintime: "07:00 am",
+			numberofplayers: "1",
+			numberofholes: "18",
+			_csrf_token: csrfToken,
+			module: "GR",
+		}).toString();
 
 		// Step 3: Navigate to the booking page URL
-		await page.goto(bookingUrl);
+		await page.goto(bookingUrl.toString());
 
 		// Step 4: Select and process elements directly
 
@@ -60,10 +61,6 @@ export async function scrapeGolfAtx(targetDate: Date) {
 		let pageNumber = 1;
 
 		do {
-			console.log(
-				`Entering Loop - pageNumber - ${pageNumber}\nLast item in teeTimes - ${teeTimes[teeTimes.length - 1] ? teeTimes[teeTimes.length - 1].courseName : "No TeeTimes yet"}, ${teeTimes[teeTimes.length - 1] ? teeTimes[teeTimes.length - 1].date : "No Teetimes yet"}\nTeetimes total length - ${teeTimes.length}`
-			);
-
 			if (pageNumber >= totalPages) {
 				hasNextPage = false;
 			}
@@ -119,8 +116,6 @@ export async function scrapeGolfAtx(targetDate: Date) {
 		// Close the browser
 		await browser.close();
 
-		// console.log(`HAS DUPLICATES: ${hasDuplicates(teeTimes)}`);
-		// console.log("Length: ", teeTimes.length);
 		return teeTimes;
 	} catch (e) {
 		console.log(e);
@@ -138,8 +133,8 @@ export async function scrapeGolfAtx(targetDate: Date) {
 //   return false;
 // };
 
-export async function golfAtxResults(targetDate: Date, key?: string) {
-	const cacheKey = targetDate.toISOString().split("T")[0] + "golfAtx";
+export async function golfAtxResults(targetDate: string, key?: string) {
+	const cacheKey = `${targetDate}::golfAtx`;
 	const cached = cache.get(cacheKey) as TeeTime[] | undefined;
 
 	if (cached) {

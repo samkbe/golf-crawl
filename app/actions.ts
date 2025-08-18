@@ -1,5 +1,4 @@
 "use server";
-import { scrapeGolfAtx } from "../app/scrape/courses/golf-atx";
 import { FetchTeeTimesState, TeeTime } from "./types";
 import { courses } from "./courses";
 import { cache } from "./cache";
@@ -46,16 +45,15 @@ export async function fetchTeeTimes(
 		const teeTimes = (
 			await Promise.allSettled(
 				selectedCourses.map(async (item) => {
-					//Caching Logic here
 					if (item) {
-						if (item.golfAtxCourse) return item.fetchFunction(date, item.key);
+						if (item.golfAtxCourse) return item.fetchFunction(dateString, item.key);
 
-						const cacheKey = date.toISOString().split("T")[0] + item.key;
+						const cacheKey = `${dateString}::${item.key}`;
 						const cached = cache.get(cacheKey) as TeeTime[] | undefined;
 
 						if (cached) return cached;
 
-						const result = item.fetchFunction(date);
+						const result = await item.fetchFunction(dateString);
 						cache.set(cacheKey, result);
 						return result;
 					}

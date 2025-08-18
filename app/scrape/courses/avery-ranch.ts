@@ -1,6 +1,6 @@
 import scrapeForeUp from "../scrapeForeUp";
 
-export async function scrapeAveryRanch(date: Date) {
+export async function scrapeAveryRanch(date: string) {
 	try {
 		return await scrapeForeUp(
 			date,

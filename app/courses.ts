@@ -11,7 +11,7 @@ import { golfAtxResults } from "./scrape/courses/golf-atx";
 type course = {
 	key: string;
 	title: string;
-	fetchFunction: (date: Date, golfAtxcourse?: string) => Promise<TeeTime[] | undefined>;
+	fetchFunction: (date: string, golfAtxcourse?: string) => Promise<TeeTime[] | undefined>;
 	golfAtxCourse?: boolean;
 };
 

@@ -1,6 +1,6 @@
 import scrapeTeeItUp from "../scrapeTeeItUp";
 
-export async function scrapeShadowGlen(date: Date) {
+export async function scrapeShadowGlen(date: string) {
 	try {
 		return await scrapeTeeItUp(
 			date,

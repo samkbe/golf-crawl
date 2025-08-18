@@ -1,6 +1,6 @@
 import scrapeForeUp from "../scrapeForeUp";
 
-export async function scrapeRiverside(date: Date) {
+export async function scrapeRiverside(date: string) {
 	try {
 		return await scrapeForeUp(
 			date,

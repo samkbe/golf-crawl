@@ -1,6 +1,6 @@
 import scrapeTeeItUp from "../scrapeTeeItUp";
 
-export async function scrapeCrystalFalls(date: Date) {
+export async function scrapeCrystalFalls(date: string) {
 	try {
 		return await scrapeTeeItUp(
 			date,
