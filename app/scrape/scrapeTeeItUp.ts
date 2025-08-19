@@ -1,5 +1,23 @@
+import 'server-only';
 import type { TeeTime } from "../types";
 import { mergeDateWithTime } from "./helpers";
+
+import 'puppeteer-extra-plugin-stealth/evasions/chrome.app';
+import 'puppeteer-extra-plugin-stealth/evasions/chrome.csi';
+import 'puppeteer-extra-plugin-stealth/evasions/chrome.loadTimes';
+import 'puppeteer-extra-plugin-stealth/evasions/chrome.runtime';
+import 'puppeteer-extra-plugin-stealth/evasions/iframe.contentWindow';
+import 'puppeteer-extra-plugin-stealth/evasions/media.codecs';
+import 'puppeteer-extra-plugin-stealth/evasions/navigator.hardwareConcurrency';
+import 'puppeteer-extra-plugin-stealth/evasions/navigator.languages';
+import 'puppeteer-extra-plugin-stealth/evasions/navigator.permissions';
+import 'puppeteer-extra-plugin-stealth/evasions/navigator.plugins';
+import 'puppeteer-extra-plugin-stealth/evasions/navigator.vendor';
+import 'puppeteer-extra-plugin-stealth/evasions/navigator.webdriver';
+import 'puppeteer-extra-plugin-stealth/evasions/sourceurl';
+import 'puppeteer-extra-plugin-stealth/evasions/user-agent-override';
+import 'puppeteer-extra-plugin-stealth/evasions/webgl.vendor';
+import 'puppeteer-extra-plugin-stealth/evasions/window.outerdimensions';
 
 export default async function scrapeTeeItUp(date: string, url: string, courseName: string) {
 	// READ: url must not contain any url params besides 'course'
@@ -9,28 +27,11 @@ export default async function scrapeTeeItUp(date: string, url: string, courseNam
 	const puppeteer = (await import("puppeteer-extra")).default;
 	const StealthPlugin = (await import("puppeteer-extra-plugin-stealth")).default;
 	// @ts-expect-error - Missing type definitions for user-preferences plugin
-	const UserPreferencesPlugin = (await import("puppeteer-extra-plugin-user-preferences")).default;
+	const { default: UserPreferences } = await import('puppeteer-extra-plugin-user-preferences');
 
-	// Configure plugins with explicit evasion settings
-	puppeteer.use(StealthPlugin({
-		enabledEvasions: new Set([
-			'chrome.app',
-			'chrome.runtime',
-			'defaultArgs',
-			'iframe.contentWindow',
-			'navigator.languages',
-			'navigator.permissions',
-			'navigator.plugins',
-			'navigator.webdriver',
-			'permissions.default',
-			'sourceurl',
-			'user-agent-override',
-			'webgl.vendor',
-			'window.chrome',
-			'window.outerdimensions'
-		])
-	}));
-	puppeteer.use(UserPreferencesPlugin());
+
+	puppeteer.use(StealthPlugin());
+	puppeteer.use(UserPreferences());
 
 	try {
 		const browser = await puppeteer.launch({ headless: true });

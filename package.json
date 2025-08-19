@@ -13,7 +13,7 @@
     "date-fns-tz": "^3.2.0",
     "next": "15.1.7",
     "node-cache": "^5.1.2",
-    "puppeteer": "^23.7.0",
+    "puppeteer": "^24.16.2",
     "puppeteer-extra": "^3.3.6",
     "puppeteer-extra-plugin-stealth": "^2.11.2",
     "puppeteer-extra-plugin-user-preferences": "^2.4.1",

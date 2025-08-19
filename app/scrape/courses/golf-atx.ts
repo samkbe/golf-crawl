@@ -1,3 +1,4 @@
+import 'server-only';
 import type { TeeTime } from "../../types";
 import { cache } from "../../cache";
 import { toMmDdYyyy } from "../helpers";
@@ -9,6 +10,23 @@ const courseKeyMap: { [key: string]: string } = {
 	"Lions Municipal Golf Course": "lions",
 };
 
+import 'puppeteer-extra-plugin-stealth/evasions/chrome.app';
+import 'puppeteer-extra-plugin-stealth/evasions/chrome.csi';
+import 'puppeteer-extra-plugin-stealth/evasions/chrome.loadTimes';
+import 'puppeteer-extra-plugin-stealth/evasions/chrome.runtime';
+import 'puppeteer-extra-plugin-stealth/evasions/iframe.contentWindow';
+import 'puppeteer-extra-plugin-stealth/evasions/media.codecs';
+import 'puppeteer-extra-plugin-stealth/evasions/navigator.hardwareConcurrency';
+import 'puppeteer-extra-plugin-stealth/evasions/navigator.languages';
+import 'puppeteer-extra-plugin-stealth/evasions/navigator.permissions';
+import 'puppeteer-extra-plugin-stealth/evasions/navigator.plugins';
+import 'puppeteer-extra-plugin-stealth/evasions/navigator.vendor';
+import 'puppeteer-extra-plugin-stealth/evasions/navigator.webdriver';
+import 'puppeteer-extra-plugin-stealth/evasions/sourceurl';
+import 'puppeteer-extra-plugin-stealth/evasions/user-agent-override';
+import 'puppeteer-extra-plugin-stealth/evasions/webgl.vendor';
+import 'puppeteer-extra-plugin-stealth/evasions/window.outerdimensions';
+
 export async function scrapeGolfAtx(targetDate: string) {
 	// Dynamic imports to avoid module loading timing issues
 	const puppeteer = (await import("puppeteer-extra")).default;
@@ -16,25 +34,8 @@ export async function scrapeGolfAtx(targetDate: string) {
 	// @ts-expect-error - Missing type definitions for user-preferences plugin
 	const UserPreferencesPlugin = (await import("puppeteer-extra-plugin-user-preferences")).default;
 
-	// Configure plugins with explicit evasion settings
-	puppeteer.use(StealthPlugin({
-		enabledEvasions: new Set([
-			'chrome.app',
-			'chrome.runtime',
-			'defaultArgs',
-			'iframe.contentWindow',
-			'navigator.languages',
-			'navigator.permissions',
-			'navigator.plugins',
-			'navigator.webdriver',
-			'permissions.default',
-			'sourceurl',
-			'user-agent-override',
-			'webgl.vendor',
-			'window.chrome',
-			'window.outerdimensions'
-		])
-	}));
+	// Configure plugins
+	puppeteer.use(StealthPlugin());
 	puppeteer.use(UserPreferencesPlugin());
 
 	try {
