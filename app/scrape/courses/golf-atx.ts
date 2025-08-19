@@ -32,12 +32,9 @@ export async function scrapeGolfAtx(targetDate: string) {
 	// Dynamic imports to avoid module loading timing issues
 	const puppeteer = (await import("puppeteer-extra")).default;
 	const StealthPlugin = (await import("puppeteer-extra-plugin-stealth")).default;
-	// @ts-expect-error - Missing type definitions for user-preferences plugin
-	const UserPreferencesPlugin = (await import("puppeteer-extra-plugin-user-preferences")).default;
 
 	// Configure plugins
 	puppeteer.use(StealthPlugin());
-	puppeteer.use(UserPreferencesPlugin());
 
 	try {
 		const browser = await puppeteer.launch({ headless: true });

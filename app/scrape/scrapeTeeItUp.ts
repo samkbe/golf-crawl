@@ -27,12 +27,8 @@ export default async function scrapeTeeItUp(date: string, url: string, courseNam
 	// Dynamic imports to avoid module loading timing issues
 	const puppeteer = (await import("puppeteer-extra")).default;
 	const StealthPlugin = (await import("puppeteer-extra-plugin-stealth")).default;
-	// @ts-expect-error - Missing type definitions for user-preferences plugin
-	const { default: UserPreferences } = await import('puppeteer-extra-plugin-user-preferences');
-
 
 	puppeteer.use(StealthPlugin());
-	puppeteer.use(UserPreferences());
 
 	try {
 		const browser = await puppeteer.launch({ headless: true });
