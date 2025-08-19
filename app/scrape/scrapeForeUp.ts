@@ -1,18 +1,10 @@
 import type { TeeTime } from "../types";
 import type { ElementHandle } from "puppeteer";
 import { mergeDateWithTimeAlt, toMmDdYyyyDash } from "./helpers";
-import puppeteer from "puppeteer-extra";
-import StealthPlugin from "puppeteer-extra-plugin-stealth";
-// @ts-expect-error - Missing type definitions for user-preferences plugin
-import UserPreferencesPlugin from "puppeteer-extra-plugin-user-preferences";
 
 const RESULTS_SEL = ".time-tile, .time-tile-ob-no-details";
 const DATE_INPUT = "input[name='date']";
 const TIMES_PATH = "/index.php/api/booking/times";
-
-// Configure plugins
-puppeteer.use(StealthPlugin());
-puppeteer.use(UserPreferencesPlugin());
 
 export default async function scrapeForeUp(
 	date: string,
@@ -22,6 +14,16 @@ export default async function scrapeForeUp(
 ) {
 	// READ: url must not contain any url params
 	// Example: https://foreupsoftware.com/index.php/booking/22221/10177#/teetimes`
+
+	// Dynamic imports to avoid module loading timing issues
+	const puppeteer = (await import("puppeteer-extra")).default;
+	const StealthPlugin = (await import("puppeteer-extra-plugin-stealth")).default;
+	// @ts-expect-error - Missing type definitions for user-preferences plugin
+	const UserPreferencesPlugin = (await import("puppeteer-extra-plugin-user-preferences")).default;
+
+	// Configure plugins
+	puppeteer.use(StealthPlugin());
+	puppeteer.use(UserPreferencesPlugin());
 
 	const browser = await puppeteer.launch({ headless: true });
 	const page = await browser.newPage();

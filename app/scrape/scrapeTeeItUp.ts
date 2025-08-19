@@ -1,17 +1,19 @@
 import type { TeeTime } from "../types";
 import { mergeDateWithTime } from "./helpers";
-import puppeteer from "puppeteer-extra";
-import StealthPlugin from "puppeteer-extra-plugin-stealth";
-// @ts-expect-error - Missing type definitions for user-preferences plugin
-import UserPreferencesPlugin from "puppeteer-extra-plugin-user-preferences";
-
-// Configure plugins
-puppeteer.use(StealthPlugin());
-puppeteer.use(UserPreferencesPlugin());
 
 export default async function scrapeTeeItUp(date: string, url: string, courseName: string) {
 	// READ: url must not contain any url params besides 'course'
 	// Example: https://crystal-falls-golf-club-2.book.teeitup.com/?course=5741`
+
+	// Dynamic imports to avoid module loading timing issues
+	const puppeteer = (await import("puppeteer-extra")).default;
+	const StealthPlugin = (await import("puppeteer-extra-plugin-stealth")).default;
+	// @ts-expect-error - Missing type definitions for user-preferences plugin
+	const UserPreferencesPlugin = (await import("puppeteer-extra-plugin-user-preferences")).default;
+
+	// Configure plugins
+	puppeteer.use(StealthPlugin());
+	puppeteer.use(UserPreferencesPlugin());
 
 	try {
 		const browser = await puppeteer.launch({ headless: true });

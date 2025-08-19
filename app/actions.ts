@@ -2,7 +2,6 @@
 import { FetchTeeTimesState, TeeTime } from "./types";
 import { courses } from "./courses";
 import { cache } from "./cache";
-import "puppeteer-extra-plugin-stealth/evasions/chrome.app";
 
 export async function fetchTeeTimes(
 	prevState: FetchTeeTimesState,
