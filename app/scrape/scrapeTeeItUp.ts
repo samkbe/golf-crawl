@@ -11,8 +11,25 @@ export default async function scrapeTeeItUp(date: string, url: string, courseNam
 	// @ts-expect-error - Missing type definitions for user-preferences plugin
 	const UserPreferencesPlugin = (await import("puppeteer-extra-plugin-user-preferences")).default;
 
-	// Configure plugins
-	puppeteer.use(StealthPlugin());
+	// Configure plugins with explicit evasion settings
+	puppeteer.use(StealthPlugin({
+		enabledEvasions: new Set([
+			'chrome.app',
+			'chrome.runtime',
+			'defaultArgs',
+			'iframe.contentWindow',
+			'navigator.languages',
+			'navigator.permissions',
+			'navigator.plugins',
+			'navigator.webdriver',
+			'permissions.default',
+			'sourceurl',
+			'user-agent-override',
+			'webgl.vendor',
+			'window.chrome',
+			'window.outerdimensions'
+		])
+	}));
 	puppeteer.use(UserPreferencesPlugin());
 
 	try {
