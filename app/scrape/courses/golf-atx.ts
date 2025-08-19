@@ -27,6 +27,8 @@ import 'puppeteer-extra-plugin-stealth/evasions/user-agent-override';
 import 'puppeteer-extra-plugin-stealth/evasions/webgl.vendor';
 import 'puppeteer-extra-plugin-stealth/evasions/window.outerdimensions';
 import 'puppeteer-extra-plugin-stealth/evasions/defaultArgs';
+import 'puppeteer-extra-plugin-user-preferences';
+import 'puppeteer-extra-plugin-user-data-dir';
 
 export async function scrapeGolfAtx(targetDate: string) {
 	// Dynamic imports to avoid module loading timing issues
