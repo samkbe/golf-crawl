@@ -18,6 +18,7 @@ import 'puppeteer-extra-plugin-stealth/evasions/sourceurl';
 import 'puppeteer-extra-plugin-stealth/evasions/user-agent-override';
 import 'puppeteer-extra-plugin-stealth/evasions/webgl.vendor';
 import 'puppeteer-extra-plugin-stealth/evasions/window.outerdimensions';
+import 'puppeteer-extra-plugin-stealth/evasions/defaultArgs';
 
 export default async function scrapeTeeItUp(date: string, url: string, courseName: string) {
 	// READ: url must not contain any url params besides 'course'
