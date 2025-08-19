@@ -19,18 +19,42 @@ import 'puppeteer-extra-plugin-stealth/evasions/user-agent-override';
 import 'puppeteer-extra-plugin-stealth/evasions/webgl.vendor';
 import 'puppeteer-extra-plugin-stealth/evasions/window.outerdimensions';
 import 'puppeteer-extra-plugin-stealth/evasions/defaultArgs';
-import 'puppeteer-extra-plugin-user-preferences';
-import 'puppeteer-extra-plugin-user-data-dir';
 
 export default async function scrapeTeeItUp(date: string, url: string, courseName: string) {
 	// READ: url must not contain any url params besides 'course'
 	// Example: https://crystal-falls-golf-club-2.book.teeitup.com/?course=5741`
 
 	// Dynamic imports to avoid module loading timing issues
-	const puppeteer = (await import("puppeteer-extra")).default;
-	const StealthPlugin = (await import("puppeteer-extra-plugin-stealth")).default;
+	// const puppeteer = (await import("puppeteer-extra")).default;
+	// const StealthPlugin = (await import("puppeteer-extra-plugin-stealth")).default;
+	// puppeteer.use(StealthPlugin());
 
-	puppeteer.use(StealthPlugin());
+	
+	const { default: puppeteer } = await import('puppeteer-extra');
+	const { default: stealthFactory } = await import('puppeteer-extra-plugin-stealth');
+	puppeteer.use(stealthFactory());
+
+	// ⬇️ Use Node require at runtime for the two problem plugins
+	const r: NodeJS.Require = eval('require');
+
+	type PluginFactory = (opts?: Record<string, unknown>) =>
+	import('puppeteer-extra-plugin').PuppeteerExtraPlugin;
+
+	// user-preferences
+	const prefMod = r('puppeteer-extra-plugin-user-preferences') as
+	| { default: PluginFactory }
+	| PluginFactory;
+	const PrefPlugin: PluginFactory = typeof prefMod === 'function' ? prefMod : prefMod.default;
+
+	// user-data-dir
+	const dirMod = r('puppeteer-extra-plugin-user-data-dir') as
+	| { default: PluginFactory }
+	| PluginFactory;
+	const DirPlugin: PluginFactory = typeof dirMod === 'function' ? dirMod : dirMod.default;
+
+	puppeteer.use(PrefPlugin());  // add options if you like
+	puppeteer.use(DirPlugin()); 
+
 
 	try {
 		const browser = await puppeteer.launch({ headless: true });
