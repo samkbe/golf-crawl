@@ -1,7 +1,10 @@
 import type { TeeTime } from "../../types";
 import { cache } from "../../cache";
 import { toMmDdYyyy } from "../helpers";
-import type { PuppeteerExtraPlugin } from "puppeteer-extra-plugin";
+import puppeteer from "puppeteer-extra";
+import StealthPlugin from "puppeteer-extra-plugin-stealth";
+// @ts-expect-error - Missing type definitions for user-preferences plugin
+import UserPreferencesPlugin from "puppeteer-extra-plugin-user-preferences";
 
 const courseKeyMap: { [key: string]: string } = {
 	"Jimmy Clay Golf Course": "jimmyClay",
@@ -10,19 +13,11 @@ const courseKeyMap: { [key: string]: string } = {
 	"Lions Municipal Golf Course": "lions",
 };
 
+// Configure plugins
+puppeteer.use(StealthPlugin());
+puppeteer.use(UserPreferencesPlugin());
+
 export async function scrapeGolfAtx(targetDate: string) {
-	const { default: puppeteer } = await import("puppeteer-extra");
-	// ⬇️ Load the plugin via Node's require (not ESM import)
-	const r: NodeRequire = eval("require");
-	const mod = r("puppeteer-extra-plugin-stealth") as
-		| { default: (opts?: Record<string, unknown>) => PuppeteerExtraPlugin }
-		| ((opts?: Record<string, unknown>) => PuppeteerExtraPlugin);
-
-	const stealthFactory = (typeof mod === "function" ? mod : mod.default) as (
-		opts?: Record<string, unknown>
-	) => PuppeteerExtraPlugin;
-
-	puppeteer.use(stealthFactory());
 
 	try {
 		const browser = await puppeteer.launch({ headless: true });

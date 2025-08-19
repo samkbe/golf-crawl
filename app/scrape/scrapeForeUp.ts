@@ -1,11 +1,18 @@
 import type { TeeTime } from "../types";
 import type { ElementHandle } from "puppeteer";
-import type { PuppeteerExtraPlugin } from "puppeteer-extra-plugin";
 import { mergeDateWithTimeAlt, toMmDdYyyyDash } from "./helpers";
+import puppeteer from "puppeteer-extra";
+import StealthPlugin from "puppeteer-extra-plugin-stealth";
+// @ts-expect-error - Missing type definitions for user-preferences plugin
+import UserPreferencesPlugin from "puppeteer-extra-plugin-user-preferences";
 
 const RESULTS_SEL = ".time-tile, .time-tile-ob-no-details";
 const DATE_INPUT = "input[name='date']";
 const TIMES_PATH = "/index.php/api/booking/times";
+
+// Configure plugins
+puppeteer.use(StealthPlugin());
+puppeteer.use(UserPreferencesPlugin());
 
 export default async function scrapeForeUp(
 	date: string,
@@ -15,19 +22,6 @@ export default async function scrapeForeUp(
 ) {
 	// READ: url must not contain any url params
 	// Example: https://foreupsoftware.com/index.php/booking/22221/10177#/teetimes`
-
-	const { default: puppeteer } = await import("puppeteer-extra");
-	// ⬇️ Load the plugin via Node's require (not ESM import)
-	const r: NodeRequire = eval("require");
-	const mod = r("puppeteer-extra-plugin-stealth") as
-		| { default: (opts?: Record<string, unknown>) => PuppeteerExtraPlugin }
-		| ((opts?: Record<string, unknown>) => PuppeteerExtraPlugin);
-
-	const stealthFactory = (typeof mod === "function" ? mod : mod.default) as (
-		opts?: Record<string, unknown>
-	) => PuppeteerExtraPlugin;
-
-	puppeteer.use(stealthFactory());
 
 	const browser = await puppeteer.launch({ headless: true });
 	const page = await browser.newPage();
