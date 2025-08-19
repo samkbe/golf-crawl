@@ -1,7 +1,7 @@
 import type { TeeTime } from "../../types";
 import { cache } from "../../cache";
 import { toMmDdYyyy } from "../helpers";
-// import type { PuppeteerExtraPlugin } from "puppeteer-extra-plugin";
+import type { PuppeteerExtraPlugin } from "puppeteer-extra-plugin";
 
 const courseKeyMap: { [key: string]: string } = {
 	"Jimmy Clay Golf Course": "jimmyClay",
@@ -12,7 +12,16 @@ const courseKeyMap: { [key: string]: string } = {
 
 export async function scrapeGolfAtx(targetDate: string) {
 	const { default: puppeteer } = await import("puppeteer-extra");
-	const { default: stealthFactory } = await import("puppeteer-extra-plugin-stealth");
+	// ⬇️ Load the plugin via Node's require (not ESM import)
+	const r: NodeRequire = eval("require");
+	const mod = r("puppeteer-extra-plugin-stealth") as
+		| { default: (opts?: Record<string, unknown>) => PuppeteerExtraPlugin }
+		| ((opts?: Record<string, unknown>) => PuppeteerExtraPlugin);
+
+	const stealthFactory = (typeof mod === "function" ? mod : mod.default) as (
+		opts?: Record<string, unknown>
+	) => PuppeteerExtraPlugin;
+
 	puppeteer.use(stealthFactory());
 
 	try {

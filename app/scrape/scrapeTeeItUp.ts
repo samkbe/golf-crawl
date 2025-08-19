@@ -1,13 +1,22 @@
 import type { TeeTime } from "../types";
 import { mergeDateWithTime } from "./helpers";
-// import type { PuppeteerExtraPlugin } from "puppeteer-extra-plugin";
+import type { PuppeteerExtraPlugin } from "puppeteer-extra-plugin";
 
 export default async function scrapeTeeItUp(date: string, url: string, courseName: string) {
 	// READ: url must not contain any url params besides 'course'
 	// Example: https://crystal-falls-golf-club-2.book.teeitup.com/?course=5741`
 
 	const { default: puppeteer } = await import("puppeteer-extra");
-	const { default: stealthFactory } = await import("puppeteer-extra-plugin-stealth");
+	// ⬇️ Load the plugin via Node's require (not ESM import)
+	const r: NodeRequire = eval("require");
+	const mod = r("puppeteer-extra-plugin-stealth") as
+		| { default: (opts?: Record<string, unknown>) => PuppeteerExtraPlugin }
+		| ((opts?: Record<string, unknown>) => PuppeteerExtraPlugin);
+
+	const stealthFactory = (typeof mod === "function" ? mod : mod.default) as (
+		opts?: Record<string, unknown>
+	) => PuppeteerExtraPlugin;
+
 	puppeteer.use(stealthFactory());
 
 	try {
