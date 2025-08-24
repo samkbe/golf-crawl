@@ -1,24 +1,24 @@
-import 'server-only';
+import "server-only";
 import type { TeeTime } from "../types";
 import { mergeDateWithTime } from "./helpers";
 
-import 'puppeteer-extra-plugin-stealth/evasions/chrome.app';
-import 'puppeteer-extra-plugin-stealth/evasions/chrome.csi';
-import 'puppeteer-extra-plugin-stealth/evasions/chrome.loadTimes';
-import 'puppeteer-extra-plugin-stealth/evasions/chrome.runtime';
-import 'puppeteer-extra-plugin-stealth/evasions/iframe.contentWindow';
-import 'puppeteer-extra-plugin-stealth/evasions/media.codecs';
-import 'puppeteer-extra-plugin-stealth/evasions/navigator.hardwareConcurrency';
-import 'puppeteer-extra-plugin-stealth/evasions/navigator.languages';
-import 'puppeteer-extra-plugin-stealth/evasions/navigator.permissions';
-import 'puppeteer-extra-plugin-stealth/evasions/navigator.plugins';
-import 'puppeteer-extra-plugin-stealth/evasions/navigator.vendor';
-import 'puppeteer-extra-plugin-stealth/evasions/navigator.webdriver';
-import 'puppeteer-extra-plugin-stealth/evasions/sourceurl';
-import 'puppeteer-extra-plugin-stealth/evasions/user-agent-override';
-import 'puppeteer-extra-plugin-stealth/evasions/webgl.vendor';
-import 'puppeteer-extra-plugin-stealth/evasions/window.outerdimensions';
-import 'puppeteer-extra-plugin-stealth/evasions/defaultArgs';
+import "puppeteer-extra-plugin-stealth/evasions/chrome.app";
+import "puppeteer-extra-plugin-stealth/evasions/chrome.csi";
+import "puppeteer-extra-plugin-stealth/evasions/chrome.loadTimes";
+import "puppeteer-extra-plugin-stealth/evasions/chrome.runtime";
+import "puppeteer-extra-plugin-stealth/evasions/iframe.contentWindow";
+import "puppeteer-extra-plugin-stealth/evasions/media.codecs";
+import "puppeteer-extra-plugin-stealth/evasions/navigator.hardwareConcurrency";
+import "puppeteer-extra-plugin-stealth/evasions/navigator.languages";
+import "puppeteer-extra-plugin-stealth/evasions/navigator.permissions";
+import "puppeteer-extra-plugin-stealth/evasions/navigator.plugins";
+import "puppeteer-extra-plugin-stealth/evasions/navigator.vendor";
+import "puppeteer-extra-plugin-stealth/evasions/navigator.webdriver";
+import "puppeteer-extra-plugin-stealth/evasions/sourceurl";
+import "puppeteer-extra-plugin-stealth/evasions/user-agent-override";
+import "puppeteer-extra-plugin-stealth/evasions/webgl.vendor";
+import "puppeteer-extra-plugin-stealth/evasions/window.outerdimensions";
+import "puppeteer-extra-plugin-stealth/evasions/defaultArgs";
 
 export default async function scrapeTeeItUp(date: string, url: string, courseName: string) {
 	// READ: url must not contain any url params besides 'course'
@@ -29,32 +29,31 @@ export default async function scrapeTeeItUp(date: string, url: string, courseNam
 	// const StealthPlugin = (await import("puppeteer-extra-plugin-stealth")).default;
 	// puppeteer.use(StealthPlugin());
 
-	
-	const { default: puppeteer } = await import('puppeteer-extra');
-	const { default: stealthFactory } = await import('puppeteer-extra-plugin-stealth');
+	const { default: puppeteer } = await import("puppeteer-extra");
+	const { default: stealthFactory } = await import("puppeteer-extra-plugin-stealth");
 	puppeteer.use(stealthFactory());
 
 	// ⬇️ Use Node require at runtime for the two problem plugins
-	const r: NodeJS.Require = eval('require');
+	const r: NodeJS.Require = eval("require");
 
-	type PluginFactory = (opts?: Record<string, unknown>) =>
-	import('puppeteer-extra-plugin').PuppeteerExtraPlugin;
+	type PluginFactory = (
+		opts?: Record<string, unknown>
+	) => import("puppeteer-extra-plugin").PuppeteerExtraPlugin;
 
 	// user-preferences
-	const prefMod = r('puppeteer-extra-plugin-user-preferences') as
-	| { default: PluginFactory }
-	| PluginFactory;
-	const PrefPlugin: PluginFactory = typeof prefMod === 'function' ? prefMod : prefMod.default;
+	const prefMod = r("puppeteer-extra-plugin-user-preferences") as
+		| { default: PluginFactory }
+		| PluginFactory;
+	const PrefPlugin: PluginFactory = typeof prefMod === "function" ? prefMod : prefMod.default;
 
 	// user-data-dir
-	const dirMod = r('puppeteer-extra-plugin-user-data-dir') as
-	| { default: PluginFactory }
-	| PluginFactory;
-	const DirPlugin: PluginFactory = typeof dirMod === 'function' ? dirMod : dirMod.default;
+	const dirMod = r("puppeteer-extra-plugin-user-data-dir") as
+		| { default: PluginFactory }
+		| PluginFactory;
+	const DirPlugin: PluginFactory = typeof dirMod === "function" ? dirMod : dirMod.default;
 
-	puppeteer.use(PrefPlugin());  // add options if you like
-	puppeteer.use(DirPlugin()); 
-
+	puppeteer.use(PrefPlugin());
+	puppeteer.use(DirPlugin());
 
 	try {
 		const browser = await puppeteer.launch({ headless: true });
