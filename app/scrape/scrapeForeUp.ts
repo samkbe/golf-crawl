@@ -34,38 +34,15 @@ export default async function scrapeForeUp(
 	// READ: url must not contain any url params
 	// Example: https://foreupsoftware.com/index.php/booking/22221/10177#/teetimes`
 
-	// Dynamic imports to avoid module loading timing issues
-	// const puppeteer = (await import("puppeteer-extra")).default;
-	// const StealthPlugin = (await import("puppeteer-extra-plugin-stealth")).default;
-	// puppeteer.use(StealthPlugin());
-
 	const { default: puppeteer } = await import("puppeteer-extra");
 	const { default: stealthFactory } = await import("puppeteer-extra-plugin-stealth");
 	puppeteer.use(stealthFactory());
 
-	// ⬇️ Use Node require at runtime for the two problem plugins
-	const r: NodeJS.Require = eval("require");
-
-	type PluginFactory = (
-		opts?: Record<string, unknown>
-	) => import("puppeteer-extra-plugin").PuppeteerExtraPlugin;
-
-	// user-preferences
-	const prefMod = r("puppeteer-extra-plugin-user-preferences") as
-		| { default: PluginFactory }
-		| PluginFactory;
-	const PrefPlugin: PluginFactory = typeof prefMod === "function" ? prefMod : prefMod.default;
-
-	// user-data-dir
-	const dirMod = r("puppeteer-extra-plugin-user-data-dir") as
-		| { default: PluginFactory }
-		| PluginFactory;
-	const DirPlugin: PluginFactory = typeof dirMod === "function" ? dirMod : dirMod.default;
-
-	puppeteer.use(PrefPlugin()); // add options if you like
-	puppeteer.use(DirPlugin());
-
-	const browser = await puppeteer.launch({ headless: true });
+	const browser = await puppeteer.launch({
+		headless: true,
+		args: ["--no-sandbox", "--disable-setuid-sandbox"],
+		userDataDir: "/tmp/puppeteer-profile",
+	});
 	const page = await browser.newPage();
 	try {
 		await page.goto(url, { waitUntil: "domcontentloaded" });
