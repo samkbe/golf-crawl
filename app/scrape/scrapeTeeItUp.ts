@@ -24,39 +24,16 @@ export default async function scrapeTeeItUp(date: string, url: string, courseNam
 	// READ: url must not contain any url params besides 'course'
 	// Example: https://crystal-falls-golf-club-2.book.teeitup.com/?course=5741`
 
-	// Dynamic imports to avoid module loading timing issues
-	// const puppeteer = (await import("puppeteer-extra")).default;
-	// const StealthPlugin = (await import("puppeteer-extra-plugin-stealth")).default;
-	// puppeteer.use(StealthPlugin());
-
 	const { default: puppeteer } = await import("puppeteer-extra");
 	const { default: stealthFactory } = await import("puppeteer-extra-plugin-stealth");
 	puppeteer.use(stealthFactory());
 
-	// ⬇️ Use Node require at runtime for the two problem plugins
-	const r: NodeJS.Require = eval("require");
-
-	type PluginFactory = (
-		opts?: Record<string, unknown>
-	) => import("puppeteer-extra-plugin").PuppeteerExtraPlugin;
-
-	// user-preferences
-	const prefMod = r("puppeteer-extra-plugin-user-preferences") as
-		| { default: PluginFactory }
-		| PluginFactory;
-	const PrefPlugin: PluginFactory = typeof prefMod === "function" ? prefMod : prefMod.default;
-
-	// user-data-dir
-	const dirMod = r("puppeteer-extra-plugin-user-data-dir") as
-		| { default: PluginFactory }
-		| PluginFactory;
-	const DirPlugin: PluginFactory = typeof dirMod === "function" ? dirMod : dirMod.default;
-
-	puppeteer.use(PrefPlugin());
-	puppeteer.use(DirPlugin());
-
 	try {
-		const browser = await puppeteer.launch({ headless: true });
+		const browser = await puppeteer.launch({
+			headless: true,
+			args: ["--no-sandbox", "--disable-setuid-sandbox", "--window-size=1366,768"],
+			defaultViewport: { width: 1366, height: 768 },
+		});
 		const page = await browser.newPage();
 
 		const u = new URL(url);
