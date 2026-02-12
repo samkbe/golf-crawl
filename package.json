@@ -1,36 +1,36 @@
 {
-	"name": "golf-crawl",
-	"version": "0.1.0",
-	"private": true,
-	"scripts": {
-		"dev": "next dev",
-		"build": "next build",
-		"start": "next start",
-		"lint": "next lint"
-	},
-	"dependencies": {
-		"@tanstack/react-table": "^8.21.2",
-		"date-fns-tz": "^3.2.0",
-		"fs-extra": "^11.3.1",
-		"next": "15.1.7",
-		"node-cache": "^5.1.2",
-		"puppeteer": "^24.16.2",
-		"puppeteer-extra": "^3.3.6",
-		"puppeteer-extra-plugin-stealth": "^2.11.2",
-		"puppeteer-extra-plugin-user-data-dir": "^2.4.1",
-		"puppeteer-extra-plugin-user-preferences": "^2.4.1",
-		"react": "19.0.0",
-		"react-dom": "19.0.0"
-	},
-	"devDependencies": {
-		"@types/node": "^20",
-		"@types/react": "19.0.0",
-		"@types/react-dom": "19.0.0",
-		"eslint": "^8",
-		"eslint-config-next": "14.2.14",
-		"postcss": "^8",
-		"prettier": "^3.5.3",
-		"tailwindcss": "^3.4.1",
-		"typescript": "^5"
-	}
+  "name": "golf-crawl",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@tanstack/react-table": "^8.21.2",
+    "date-fns-tz": "^3.2.0",
+    "fs-extra": "^11.3.1",
+    "next": "15.1.11",
+    "node-cache": "^5.1.2",
+    "puppeteer": "^24.16.2",
+    "puppeteer-extra": "^3.3.6",
+    "puppeteer-extra-plugin-stealth": "^2.11.2",
+    "puppeteer-extra-plugin-user-data-dir": "^2.4.1",
+    "puppeteer-extra-plugin-user-preferences": "^2.4.1",
+    "react": "19.0.0",
+    "react-dom": "19.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "@types/react": "19.0.0",
+    "@types/react-dom": "19.0.0",
+    "eslint": "^8",
+    "eslint-config-next": "14.2.14",
+    "postcss": "^8",
+    "prettier": "^3.5.3",
+    "tailwindcss": "^3.4.1",
+    "typescript": "^5"
+  }
 }
