@@ -110,15 +110,3 @@ export default function Home() {
 		</div>
 	);
 }
-
-// Golf ATX - Random
-// Forrest Creek - ChronoGolf
-
-// Falconhead - Foreup
-// Riverside - Foreup
-// Avery Ranch - Foreup
-// Teravista -  Foreup
-
-// Harvey Penick - Teeitup
-// Crystal Falls - Teeitup
-// Shadowglen - Teeitup
