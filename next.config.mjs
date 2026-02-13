@@ -9,7 +9,7 @@ const nextConfig = {
 		"fs-extra",
 	],
 	outputFileTracingIncludes: {
-		"/api/foreup": [
+		"/app/page": [
 			"node_modules/puppeteer-extra-plugin-stealth/**",
 			"node_modules/puppeteer-extra-plugin-user-preferences/**",
 			"node_modules/puppeteer-extra-plugin-user-data-dir/**",
