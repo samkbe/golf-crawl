@@ -8,6 +8,7 @@ const nextConfig = {
 	  "puppeteer-extra-plugin-user-preferences",
 	  "puppeteer-extra-plugin-user-data-dir",
 	  "fs-extra",
+	  "@sparticuz/chromium",
 	],
 	outputFileTracingIncludes: {
 	  "/": [
@@ -54,6 +55,7 @@ const nextConfig = {
 		"./node_modules/shallow-clone/**",
 		"./node_modules/is-extendable/**",
 		"./node_modules/mixin-object/**",
+		"./node_modules/@sparticuz/chromium/**",
 	  ],
 	},
   };

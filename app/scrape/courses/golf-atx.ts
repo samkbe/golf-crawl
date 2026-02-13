@@ -2,6 +2,7 @@ import "server-only";
 import type { TeeTime } from "../../types";
 import { cache } from "../../cache";
 import { toMmDdYyyy } from "../helpers";
+import { launchBrowser } from "../browser";
 
 const courseKeyMap: { [key: string]: string } = {
 	"Jimmy Clay Golf Course": "jimmyClay",
@@ -13,16 +14,17 @@ const courseKeyMap: { [key: string]: string } = {
 export async function scrapeGolfAtx(targetDate: string) {
 	// Dynamic imports to avoid module loading timing issues
 
-	const { default: puppeteer } = await import("puppeteer-extra");
-	const { default: stealthFactory } = await import("puppeteer-extra-plugin-stealth");
-	puppeteer.use(stealthFactory());
+	// const { default: puppeteer } = await import("puppeteer-extra");
+	// const { default: stealthFactory } = await import("puppeteer-extra-plugin-stealth");
+	// puppeteer.use(stealthFactory());
 
 	try {
-		const browser = await puppeteer.launch({
-			headless: true,
-			args: ["--no-sandbox", "--disable-setuid-sandbox", "--window-size=1366,768"],
-			defaultViewport: { width: 1366, height: 768 },
-		});
+		const browser = await launchBrowser();
+		// const browser = await puppeteer.launch({
+		// 	headless: true,
+		// 	args: ["--no-sandbox", "--disable-setuid-sandbox", "--window-size=1366,768"],
+		// 	defaultViewport: { width: 1366, height: 768 },
+		// });
 		const page = await browser.newPage();
 
 		// Step 1: Go to the main page to retrieve the CSRF token

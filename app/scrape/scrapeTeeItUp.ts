@@ -1,21 +1,23 @@
 import "server-only";
 import type { TeeTime } from "../types";
 import { mergeDateWithTime } from "./helpers";
+import { launchBrowser } from "./browser";
 
 export default async function scrapeTeeItUp(date: string, url: string, courseName: string) {
 	// READ: url must not contain any url params besides 'course'
 	// Example: https://crystal-falls-golf-club-2.book.teeitup.com/?course=5741`
 
-	const { default: puppeteer } = await import("puppeteer-extra");
-	const { default: stealthFactory } = await import("puppeteer-extra-plugin-stealth");
-	puppeteer.use(stealthFactory());
+	// const { default: puppeteer } = await import("puppeteer-extra");
+	// const { default: stealthFactory } = await import("puppeteer-extra-plugin-stealth");
+	// puppeteer.use(stealthFactory());
 
 	try {
-		const browser = await puppeteer.launch({
-			headless: true,
-			args: ["--no-sandbox", "--disable-setuid-sandbox", "--window-size=1366,768"],
-			defaultViewport: { width: 1366, height: 768 },
-		});
+		// const browser = await puppeteer.launch({
+		// 	headless: true,
+		// 	args: ["--no-sandbox", "--disable-setuid-sandbox", "--window-size=1366,768"],
+		// 	defaultViewport: { width: 1366, height: 768 },
+		// });
+		const browser = await launchBrowser();
 		const page = await browser.newPage();
 
 		const u = new URL(url);

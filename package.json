@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@sparticuz/chromium": "^143.0.4",
     "@tanstack/react-table": "^8.21.2",
     "date-fns-tz": "^3.2.0",
     "fs-extra": "^11.3.1",
