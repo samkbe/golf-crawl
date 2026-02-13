@@ -9,6 +9,10 @@ import {
 	Row,
 } from "@tanstack/react-table";
 import { useState, useEffect } from "react";
+import { ArrowUpIcon, ArrowDownIcon } from "lucide-react";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { Slider } from "@/components/ui/slider";
+import { Label } from "@/components/ui/label";
 import type { TeeTime } from "../types";
 import type { SortingState, ColumnFiltersState } from "@tanstack/react-table";
 
@@ -37,11 +41,11 @@ const columns = [
 			const value = info.getValue();
 			return typeof value === "number" ? `$${value}` : "N/A";
 		},
-		filterFn: (row: Row<TeeTime>, columnId: string, filterValue: string[]) => {
-			if (typeof filterValue !== "number") return true;
+		filterFn: (row: Row<TeeTime>, columnId: string, filterValue: [number, number]) => {
+			if (!Array.isArray(filterValue) || filterValue.length !== 2) return true;
 			const price = row.getValue(columnId);
 			if (typeof price !== "number") return false;
-			return price <= filterValue;
+			return price >= filterValue[0] && price <= filterValue[1];
 		},
 	}),
 	columnHelper.accessor("bookingLink", {
@@ -66,35 +70,34 @@ const columns = [
 ];
 
 export function TeeTimeTable({ data, pending }: { data: TeeTime[]; pending: boolean }) {
-	useEffect(() => {
-		const map: { [key: string]: boolean } = {};
-		for (const course of data) {
-			if (!map[course.courseName]) {
-				map[course.courseName] = true;
-			}
-		}
-		const newArr = Object.keys(map).map((course) => {
-			return {
-				course: course,
-				active: true,
-			};
-		});
-		setSelectedCourses(newArr);
-
-		setColumnFilters([
-			{
-				id: "courseName",
-				value: Object.keys(map),
-			},
-		]);
-	}, [data]);
-
-	const [selectedCourses, setSelectedCourses] = useState<{ active: boolean; course: string }[]>(
-		[]
-	);
+	const [courseNames, setCourseNames] = useState<string[]>([]);
+	const [activeCourses, setActiveCourses] = useState<string[]>([]);
 	const [sorting, setSorting] = useState<SortingState>([]);
 	const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
-	const [maxPrice, setMaxPrice] = useState(500);
+	const [priceRange, setPriceRange] = useState<[number, number]>([0, 500]);
+
+	useEffect(() => {
+		const unique = [...new Set(data.map((t) => t.courseName))];
+		setCourseNames(unique);
+		setActiveCourses(unique);
+		setColumnFilters([{ id: "courseName", value: unique }]);
+	}, [data]);
+
+	function handleCourseToggle(values: string[]) {
+		setActiveCourses(values);
+		setColumnFilters((prev) => {
+			const others = prev.filter((f) => f.id !== "courseName");
+			return [...others, { id: "courseName", value: values }];
+		});
+	}
+
+	function updatePriceFilter(range: [number, number]) {
+		setPriceRange(range);
+		setColumnFilters((prev) => {
+			const others = prev.filter((f) => f.id !== "price");
+			return [...others, { id: "price", value: range }];
+		});
+	}
 
 	const table = useReactTable({
 		data,
@@ -110,19 +113,6 @@ export function TeeTimeTable({ data, pending }: { data: TeeTime[]; pending: bool
 		getFilteredRowModel: getFilteredRowModel(),
 	});
 
-	function updatePriceFilter(max: number) {
-		setColumnFilters((prev) => {
-			const others = prev.filter((f) => f.id !== "price");
-			return [
-				...others,
-				{
-					id: "price",
-					value: max,
-				},
-			];
-		});
-	}
-
 	return (
 		<>
 			{pending ? (
@@ -135,61 +125,36 @@ export function TeeTimeTable({ data, pending }: { data: TeeTime[]; pending: bool
 				<>
 					<div className="rounded-md my-4 w-full mx-auto max-w-2xl p-4 bg-white/50 backdrop-blur-md">
 						<h2 className="font-bold">Courses:</h2>
-						<div className="flex my-4 flex-wrap gap-2">
-							{selectedCourses.map(({ course, active }) => {
-								return (
-									<div
-										onClick={() => {
-											setSelectedCourses((prevArr) => {
-												const newArr = prevArr.map((item) =>
-													item.course === course
-														? { ...item, active: !item.active }
-														: item
-												);
-
-												const activeCourses = newArr
-													.filter((item) => item.active)
-													.map((item) => item.course);
-
-												setColumnFilters([
-													{
-														id: "courseName",
-														value: activeCourses,
-													},
-												]);
-
-												return newArr;
-											});
-										}}
-										key={course}
-										className={`cursor-pointer py-2 px-4 font-bold rounded-xl border inline-block ${
-											active
-												? "bg-green-700 text-white"
-												: "bg-transparent text-black"
-										}`}
-									>
-										{course}
-									</div>
-								);
-							})}
-						</div>
+						<ToggleGroup
+							type="multiple"
+							variant="outline"
+							value={activeCourses}
+							onValueChange={handleCourseToggle}
+							className="flex flex-wrap gap-2 my-4 justify-start"
+						>
+							{courseNames.map((course) => (
+								<ToggleGroupItem
+									key={course}
+									value={course}
+									className="rounded-xl px-4 py-2 font-bold data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
+								>
+									{course}
+								</ToggleGroupItem>
+							))}
+						</ToggleGroup>
 						<div>
 							<h2 className="font-bold">Filters:</h2>
-							<label className="pr-5" htmlFor="maxPrice">
-								Max Price: ${maxPrice}
-							</label>
-							<input
-								className="pl-5 block accent-green-700"
-								id="maxPrice"
-								type="range"
-								min="0"
-								max="500"
-								value={maxPrice}
-								onChange={(e) => {
-									const newMax = Number(e.target.value);
-									setMaxPrice(newMax);
-									updatePriceFilter(newMax);
-								}}
+							<Label className="block mt-2 mb-3">
+								Price: ${priceRange[0]} &ndash; ${priceRange[1]}
+							</Label>
+							<Slider
+								min={0}
+								max={500}
+								step={5}
+								value={priceRange}
+								onValueChange={(value) =>
+									updatePriceFilter(value as [number, number])
+								}
 							/>
 						</div>
 					</div>
@@ -204,14 +169,16 @@ export function TeeTimeTable({ data, pending }: { data: TeeTime[]; pending: bool
 												className="p-2 cursor-pointer"
 												onClick={header.column.getToggleSortingHandler()}
 											>
+											<div className="flex items-center gap-1">
 												{flexRender(
 													header.column.columnDef.header,
 													header.getContext()
 												)}
 												{{
-													asc: " 🔼",
-													desc: " 🔽",
+													asc: <ArrowUpIcon className="size-4" />,
+													desc: <ArrowDownIcon className="size-4" />,
 												}[header.column.getIsSorted() as string] ?? null}
+											</div>
 											</th>
 										))}
 									</tr>
