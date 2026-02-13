@@ -3,6 +3,10 @@ import { fetchTeeTimes } from "./actions";
 import { useActionState } from "react";
 import { useState } from "react";
 import { TeeTimeTable } from "./components/teeTimeTable";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 
 const courses = [
 	{
@@ -63,48 +67,44 @@ export default function Home() {
 				action={formAction}
 				className="max-w-2xl rounded-lg p-4 mt-4 md:mx-auto bg-white/50 backdrop-blur-md"
 			>
-				<div>
-					<label htmlFor="date">Date:</label>
-					<input id="date" name="date" type="date" required />
+				<div className="flex items-center gap-2">
+					<Label htmlFor="date">Date:</Label>
+					<Input id="date" name="date" type="date" required className="w-auto" />
 				</div>
-				<fieldset
-					disabled={allSelected}
-					className={`flex flex-wrap my-4 ${allSelected ? "opacity-25" : ""}`}
+				<div
+					className={`flex flex-wrap my-4 gap-y-3 ${allSelected ? "opacity-25" : ""}`}
 				>
 					{courses.map(({ title, key }) => {
 						return (
-							<div className="basis-1/2 md:basis-1/3" key={key}>
-								<input
-									className="mr-1 accent-green-700"
+							<div className="basis-1/2 md:basis-1/3 flex items-center gap-2" key={key}>
+								<Checkbox
 									id={key}
-									type="checkbox"
 									value={key}
 									name="courses"
+									disabled={allSelected}
 								/>
-								<label className="text-nowrap" htmlFor={key}>
+								<Label htmlFor={key} className="text-nowrap cursor-pointer">
 									{title}
-								</label>
+								</Label>
 							</div>
 						);
 					})}
-				</fieldset>
-				<div className="my-4 text-center">
-					<input
-						className="mr-1"
-						id="all"
-						type="checkbox"
-						name="all"
-						onChange={(e) => setAllSelected(e.target.checked)}
-					/>
-					<label htmlFor="all">All Courses</label>
 				</div>
-				<button
-					className="p-2 border font-bold rounded-md w-full hover:bg-green-500 transition-colors duration-300"
+				<div className="my-4 flex items-center justify-center gap-2">
+					<Checkbox
+						id="all"
+						name="all"
+						onCheckedChange={(checked) => setAllSelected(checked === true)}
+					/>
+					<Label htmlFor="all" className="cursor-pointer">All Courses</Label>
+				</div>
+				<Button
+					className="w-full"
 					disabled={pending}
 					type="submit"
 				>
 					{pending ? "Fetching Tee Times..." : "Find Tee Times"}
-				</button>
+				</Button>
 			</form>
 			<TeeTimeTable data={state.teeTimes} pending={pending} />
 		</div>
