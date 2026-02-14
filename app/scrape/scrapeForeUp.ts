@@ -16,7 +16,7 @@ export default async function scrapeForeUp(
 ) {
 	// READ: url must not contain any url params
 	// Example: https://foreupsoftware.com/index.php/booking/22221/10177#/teetimes`
-	
+
 	const browser = await launchBrowser();
 	const page = await browser.newPage();
 	try {

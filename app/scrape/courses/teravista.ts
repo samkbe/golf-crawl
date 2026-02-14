@@ -1,4 +1,6 @@
 import scrapeForeUp from "../scrapeForeUp";
+import { captureError } from "../../lib/logger";
+import { ScrapeError } from "../../errors";
 
 export async function scrapeTeravista(date: string) {
 	try {
@@ -8,8 +10,14 @@ export async function scrapeTeravista(date: string) {
 			"Teravista",
 			"https://foreupsoftware.com/index.php/booking/23033/10176#/teetimes"
 		);
-	} catch (e) {
-		console.log(e);
-		throw new Error("Failed");
+	} catch (error) {
+		const wrapped = new ScrapeError("Failed to scrape Teravista", {
+			courseName: "Teravista",
+			scrapeDate: date,
+			scraperType: "foreup",
+			cause: error,
+		});
+		captureError(wrapped);
+		throw wrapped;
 	}
 }

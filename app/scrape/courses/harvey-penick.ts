@@ -1,4 +1,6 @@
 import scrapeTeeItUp from "../scrapeTeeItUp";
+import { ScrapeError } from "@/app/errors";
+import { captureError } from "@/app/lib/logger";
 
 export async function scrapeHarveyPenick(date: string) {
 	try {
@@ -7,8 +9,14 @@ export async function scrapeHarveyPenick(date: string) {
 			"https://harvey-penick-golf-campus.book.teeitup.golf/?course=1020",
 			"Harvey Penick"
 		);
-	} catch (e) {
-		console.log(e);
-		throw new Error("Failed");
+	} catch (error) {
+		const wrapped = new ScrapeError("Failed to scrape Harvey Penick", {
+			courseName: "Harvey Penick",
+			scrapeDate: date,
+			scraperType: "teeitup",
+			cause: error,
+		});
+		captureError(wrapped);
+		throw wrapped;
 	}
 }
