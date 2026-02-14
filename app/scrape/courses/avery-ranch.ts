@@ -4,9 +4,9 @@ export async function scrapeAveryRanch(date: string) {
 	try {
 		return await scrapeForeUp(
 			date,
-			"https://foreupsoftware.com/index.php/booking/22219/10175#/teetimes",
+			"https://foreupsoftware.com/index.php/booking/23032/10175#/teetimes",
 			"Avery Ranch",
-			"https://foreupsoftware.com/index.php/booking/22219/10175#/teetimes"
+			"https://foreupsoftware.com/index.php/booking/23032/10175#/teetimes"
 		);
 	} catch (e) {
 		console.log(e);

@@ -16,16 +16,7 @@ export default async function scrapeForeUp(
 ) {
 	// READ: url must not contain any url params
 	// Example: https://foreupsoftware.com/index.php/booking/22221/10177#/teetimes`
-
-	// const { default: puppeteer } = await import("puppeteer-extra");
-	// const { default: stealthFactory } = await import("puppeteer-extra-plugin-stealth");
-	// puppeteer.use(stealthFactory());
-
-	// const browser = await puppeteer.launch({
-	// 	headless: true,
-	// 	args: ["--no-sandbox", "--disable-setuid-sandbox", "--window-size=1366,768"],
-	// 	defaultViewport: { width: 1366, height: 768 },
-	// });
+	
 	const browser = await launchBrowser();
 	const page = await browser.newPage();
 	try {

@@ -4,9 +4,9 @@ export async function scrapeTeravista(date: string) {
 	try {
 		return await scrapeForeUp(
 			date,
-			"https://foreupsoftware.com/index.php/booking/22220/10176#/teetimes",
+			"https://foreupsoftware.com/index.php/booking/23033/10176#/teetimes",
 			"Teravista",
-			"https://foreupsoftware.com/index.php/booking/22220/10176#/teetimes"
+			"https://foreupsoftware.com/index.php/booking/23033/10176#/teetimes"
 		);
 	} catch (e) {
 		console.log(e);
