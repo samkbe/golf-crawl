@@ -78,6 +78,7 @@ export function TeeTimeTable({
 	pending: boolean;
 	courseNames: string[];
 }) {
+	const [allCourseNames, setAllCourseNames] = useState<string[]>([]);
 	const [activeCourses, setActiveCourses] = useState<string[]>([]);
 	const [sorting, setSorting] = useState<SortingState>([]);
 	const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
@@ -85,6 +86,7 @@ export function TeeTimeTable({
 
 	useEffect(() => {
 		const unique = [...new Set(data.map((t) => t.courseName))];
+		setAllCourseNames(unique);
 		setActiveCourses(unique);
 		setColumnFilters([{ id: "courseName", value: unique }]);
 	}, [data]);
@@ -141,7 +143,7 @@ export function TeeTimeTable({
 							onValueChange={handleCourseToggle}
 							className="flex flex-wrap gap-2 my-4 justify-start"
 						>
-							{courseNames.map((course) => (
+							{allCourseNames.map((course) => (
 								<ToggleGroupItem
 									key={course}
 									value={course}
