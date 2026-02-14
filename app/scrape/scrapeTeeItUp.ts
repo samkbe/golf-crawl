@@ -2,13 +2,15 @@ import "server-only";
 import type { TeeTime } from "../types";
 import { mergeDateWithTime } from "./helpers";
 import { launchBrowser } from "./browser";
+import { ParseError } from "../errors";
 
 export default async function scrapeTeeItUp(date: string, url: string, courseName: string) {
 	// READ: url must not contain any url params besides 'course'
 	// Example: https://crystal-falls-golf-club-2.book.teeitup.com/?course=5741`
 
+	const browser = await launchBrowser();
+
 	try {
-		const browser = await launchBrowser();
 		const page = await browser.newPage();
 
 		const u = new URL(url);
@@ -20,7 +22,15 @@ export default async function scrapeTeeItUp(date: string, url: string, courseNam
 		const bookingPanelSelector =
 			'div[role="group"]:has(> div button[data-testid="teetimes_book_now_button"], > div button[data-testid="teetimes_choose_rate_button"])';
 
-		await page.waitForSelector(bookingPanelSelector);
+		try {
+			await page.waitForSelector(bookingPanelSelector, { timeout: 10000 });
+		} catch (error) {
+			throw new ParseError("Tee time booking panels not found — page structure may have changed", {
+				courseName,
+				field: "bookingPanels",
+				cause: error,
+			});
+		}
 
 		const bookingPanels = await page.$$(bookingPanelSelector);
 
@@ -31,7 +41,10 @@ export default async function scrapeTeeItUp(date: string, url: string, courseNam
 				"[data-testid='teetimes-tile-time']",
 				(el) => el.textContent
 			);
-			if (!timeString) throw new Error("Couldn't parse time text content");
+			if (!timeString) throw new ParseError("Couldn't parse time text content", {
+				courseName,
+				field: "time",
+			});
 
 			timeString = timeString.trim();
 
@@ -53,13 +66,19 @@ export default async function scrapeTeeItUp(date: string, url: string, courseNam
 				(el) => el.textContent
 			);
 
-			if (!slotsString) throw new Error("Couldn't parse open slots content");
+			if (!slotsString) throw new ParseError("Couldn't parse open slots content", {
+				courseName,
+				field: "openSlots",
+			});
 
 			slotsString = slotsString.trim();
 
 			if (!(slotsString in slotsMap)) {
-				throw new Error(`Invalid slots string: ${slotsString}`);
-			}
+				throw new ParseError(`Unexpected slots format: ${slotsString}`, {
+				  courseName,
+				  field: "openSlots",
+				});
+			  }
 
 			const openSlots = slotsMap[slotsString as keyof typeof slotsMap];
 
@@ -75,7 +94,10 @@ export default async function scrapeTeeItUp(date: string, url: string, courseNam
 				}
 			);
 
-			if (!price) throw new Error("Couldn't parse price");
+			if (!price) throw new ParseError("Couldn't parse price", {
+				courseName,
+				field: "price",
+			  });
 
 			teeTimes.push({
 				date: time,
@@ -85,11 +107,8 @@ export default async function scrapeTeeItUp(date: string, url: string, courseNam
 				bookingLink: u.toString(),
 			});
 		}
-
-		await browser.close();
 		return teeTimes;
-	} catch (e) {
-		console.log(e);
-		throw new Error("Failed");
+	} finally {
+		await browser.close();
 	}
 }
