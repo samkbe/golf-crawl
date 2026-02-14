@@ -2,6 +2,7 @@
 import { FetchTeeTimesState, TeeTime } from "./types";
 import { courses } from "./courses";
 import { cache } from "./cache";
+import { captureError } from "./lib/logger";
 
 export async function fetchTeeTimes(
 	prevState: FetchTeeTimesState,
@@ -41,6 +42,8 @@ export async function fetchTeeTimes(
 			.filter(Boolean);
 	}
 
+	const failedCourses: string[] = [];
+
 	try {
 		const teeTimes = (
 			await Promise.allSettled(
@@ -60,23 +63,44 @@ export async function fetchTeeTimes(
 				})
 			)
 		)
-			.map((result) => {
+			.map((result, i) => {
 				if (result.status === "fulfilled") {
 					return result.value;
 				} else {
-					console.log("Course scraping failed:", result.reason);
+					const courseKey = selectedCourses[i]?.key ?? "unknown";
+					failedCourses.push(courseKey);
 					return undefined;
 				}
 			})
 			.flat()
 			.filter((teeTime) => teeTime !== undefined);
 
-		if (!teeTimes || teeTimes.length === 0) {
-			return { ...prevState, error: "No tee times found for the selected courses" };
+		// Every course failed
+		if (teeTimes.length === 0 && failedCourses.length > 0) {
+			return {
+				...prevState,
+				teeTimes: [],
+				error: `Failed to fetch tee times for: ${failedCourses.join(", ")}`,
+			};
 		}
-		return { teeTimes, error: "", isLoading: false };
-	} catch (e) {
-		console.log("Error when fetching", e);
-		return { ...prevState, error: "Failed to scrape Tee Times" };
+
+		// No results but nothing failed
+		if (teeTimes.length === 0) {
+			return {
+				...prevState,
+				teeTimes: [],
+				error: "No tee times found for the selected courses",
+			};
+		}
+
+		// Partial success
+		return {
+			teeTimes,
+			error: failedCourses.length > 0 ? `Could not load: ${failedCourses.join(", ")}` : "",
+			isLoading: false,
+		};
+	} catch (error) {
+		captureError(error, { scrapeDate: dateString }, "fatal");
+		return { ...prevState, teeTimes: [], error: "An unexpected error occurred. Please try again." };
 	}
 }
