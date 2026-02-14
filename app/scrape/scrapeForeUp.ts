@@ -3,6 +3,8 @@ import type { TeeTime } from "../types";
 import type { ElementHandle } from "puppeteer";
 import { mergeDateWithTimeAlt, toMmDdYyyyDash } from "./helpers";
 import { launchBrowser } from "./browser";
+import { captureMessage } from "../lib/logger";
+import { ParseError } from "../errors";
 
 const RESULTS_SEL = ".time-tile, .time-tile-ob-no-details";
 const DATE_INPUT = "input[name='date']";
@@ -25,7 +27,16 @@ export default async function scrapeForeUp(
 		// Click "Public" if present
 		await page
 			.waitForSelector(".online-booking-content button.btn.btn-primary", { timeout: 10000 })
-			.catch(() => {});
+			.catch(() => {
+				captureMessage(
+					`Public button not found for ${courseName}`,
+					{
+						courseName,
+						scrapeDate: date,
+					},
+					"info"
+				);
+			});
 		for (const btn of await page.$$(".online-booking-content button.btn.btn-primary")) {
 			const text = await page.evaluate((el) => el.textContent?.trim().toLowerCase(), btn);
 			if (text === "public") {
@@ -36,7 +47,16 @@ export default async function scrapeForeUp(
 
 		const mmddyyyy = toMmDdYyyyDash(date);
 
-		await page.waitForSelector(DATE_INPUT, { visible: true });
+		try {
+			await page.waitForSelector(DATE_INPUT, { visible: true, timeout: 10000 });
+		} catch (error) {
+			throw new ParseError("Date input not found — page structure may have changed", {
+				courseName,
+				field: "dateInput",
+				cause: error,
+			});
+		}
+
 		await page.$eval(
 			DATE_INPUT,
 			(el, value) => {
@@ -50,27 +70,43 @@ export default async function scrapeForeUp(
 
 		// focus then press Enter while we wait for the exact XHR for that date
 		await page.focus(DATE_INPUT);
-		await Promise.all([
-			page.keyboard.press("Enter"),
-			page.waitForResponse(
-				(res) => {
-					if (!res.ok()) return false;
-					try {
-						const u = new URL(res.url());
-						return (
-							u.pathname.endsWith(TIMES_PATH) &&
-							u.searchParams.get("date") === mmddyyyy
-						);
-					} catch {
-						return false;
-					}
-				},
-				{ timeout: 20000 }
-			),
-		]);
 
-		// Ensure results are rendered (if you’re parsing the DOM instead of the JSON)
-		await page.waitForSelector(RESULTS_SEL, { timeout: 20000 });
+		try {
+			await Promise.all([
+				page.keyboard.press("Enter"),
+				page.waitForResponse(
+					(res) => {
+						if (!res.ok()) return false;
+						try {
+							const u = new URL(res.url());
+							return (
+								u.pathname.endsWith(TIMES_PATH) &&
+								u.searchParams.get("date") === mmddyyyy
+							);
+						} catch {
+							return false;
+						}
+					},
+					{ timeout: 20000 }
+				),
+			]);
+		} catch (error) {
+			throw new ParseError("Tee times API response not received after date change", {
+				courseName,
+				field: "apiResponse",
+				cause: error,
+			});
+		}
+
+		try {
+			await page.waitForSelector(RESULTS_SEL, { timeout: 20000 });
+		} catch (error) {
+			throw new ParseError("Tee time result tiles not rendered after API response", {
+				courseName,
+				field: "resultTiles",
+				cause: error,
+			});
+		}
 
 		// ---- Parse either layout (use your existing parsers) ----
 		let teeTimes: TeeTime[] = [];
@@ -79,8 +115,12 @@ export default async function scrapeForeUp(
 			teeTimes = await parseForeUpTiles(oldPanels, date, courseName, bookingLink);
 		} else {
 			const newPanels = await page.$$(".time-tile-ob-no-details");
-			if (newPanels.length === 0)
-				throw new Error("No tee time elements found after date change.");
+			if (newPanels.length === 0) {
+				throw new ParseError("No tee time elements found after date change", {
+					courseName,
+					field: "resultTiles",
+				});
+			}
 			teeTimes = await parseForeUpRows(newPanels, date, courseName, bookingLink);
 		}
 		return teeTimes;
@@ -101,7 +141,11 @@ async function parseForeUpTiles(
 			".booking-start-time-label",
 			(el) => el.textContent
 		);
-		if (!timeString) throw new Error("Couldn't parse time text content");
+		if (!timeString)
+			throw new ParseError("Couldn't parse time text content", {
+				courseName,
+				field: "time",
+			});
 
 		timeString = timeString.trim();
 
@@ -112,18 +156,36 @@ async function parseForeUpTiles(
 			(el) => el.textContent
 		);
 
-		if (!slotsString) throw new Error("Couldn't parse open slots content");
+		if (!slotsString)
+			throw new ParseError("Couldn't parse open slots content", {
+				courseName,
+				field: "openSlots",
+			});
 
 		slotsString = slotsString.trim();
 
-		if (!slotsString) throw new Error(`Couldn't parse number of open slots`);
+		if (!slotsString)
+			throw new ParseError("Couldn't parse number of open slots", {
+				courseName,
+				field: "openSlots",
+			});
 
 		let priceStr = await bookingPanel.$eval(".js-booking-green-fee", (el) => el.textContent);
-		if (!priceStr) throw new Error(`Couldn't parse price`);
+
+		if (!priceStr)
+			throw new ParseError("Couldn't parse price", {
+				courseName,
+				field: "price",
+			});
 
 		priceStr = priceStr?.trim();
 
 		const price = parseFloat(priceStr.replace(/[$,]/g, ""));
+		if (isNaN(price))
+			throw new ParseError(`Couldn't parse price value from: "${priceStr}"`, {
+				courseName,
+				field: "price",
+			});
 
 		teeTimes.push({
 			date: time,
@@ -148,7 +210,11 @@ async function parseForeUpRows(
 			".times-booking-start-time-label",
 			(el) => el.textContent
 		);
-		if (!timeString) throw new Error("Couldn't parse time text content");
+		if (!timeString)
+			throw new ParseError("Couldn't parse time text content", {
+				courseName,
+				field: "time",
+			});
 
 		timeString = timeString.trim();
 
@@ -159,18 +225,35 @@ async function parseForeUpRows(
 			(el) => el.textContent?.split("Players")[0]
 		);
 
-		if (!slotsString) throw new Error("Couldn't parse open slots content");
+		if (!slotsString)
+			throw new ParseError("Couldn't parse open slots content", {
+				courseName,
+				field: "openSlots",
+			});
 
 		slotsString = slotsString.trim();
 
-		if (!slotsString) throw new Error(`Couldn't parse number of open slots`);
+		if (!slotsString)
+			throw new ParseError("Couldn't parse number of open slots", {
+				courseName,
+				field: "openSlots",
+			});
 
 		let priceStr = await bookingPanel.$eval(".js-booking-green-fee", (el) => el.textContent);
-		if (!priceStr) throw new Error(`Couldn't parse price`);
+		if (!priceStr)
+			throw new ParseError("Couldn't parse price", {
+				courseName,
+				field: "price",
+			});
 
 		priceStr = priceStr?.trim();
 
 		const price = parseFloat(priceStr.replace(/[$,]/g, ""));
+		if (isNaN(price))
+			throw new ParseError(`Couldn't parse price value from: "${priceStr}"`, {
+				courseName,
+				field: "price",
+			});
 
 		teeTimes.push({
 			date: time,
