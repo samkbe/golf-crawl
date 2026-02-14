@@ -69,8 +69,15 @@ const columns = [
 	}),
 ];
 
-export function TeeTimeTable({ data, pending }: { data: TeeTime[]; pending: boolean }) {
-	const [courseNames, setCourseNames] = useState<string[]>([]);
+export function TeeTimeTable({
+	data,
+	pending,
+	courseNames,
+}: {
+	data: TeeTime[];
+	pending: boolean;
+	courseNames: string[];
+}) {
 	const [activeCourses, setActiveCourses] = useState<string[]>([]);
 	const [sorting, setSorting] = useState<SortingState>([]);
 	const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
@@ -78,7 +85,6 @@ export function TeeTimeTable({ data, pending }: { data: TeeTime[]; pending: bool
 
 	useEffect(() => {
 		const unique = [...new Set(data.map((t) => t.courseName))];
-		setCourseNames(unique);
 		setActiveCourses(unique);
 		setColumnFilters([{ id: "courseName", value: unique }]);
 	}, [data]);
@@ -116,10 +122,13 @@ export function TeeTimeTable({ data, pending }: { data: TeeTime[]; pending: bool
 	return (
 		<>
 			{pending ? (
-				<div className="rounded-md my-4 w-full mx-auto max-w-2xl p-4 bg-white/50 backdrop-blur-md animate-pulse-scale min-h-80 flex justify-center items-center">
+				<div className="rounded-md my-4 w-full mx-auto max-w-2xl p-4 bg-white/50 backdrop-blur-md animate-pulse-scale min-h-80 flex flex-col justify-center items-center gap-2">
 					<h2 className="text-center font-bold">
 						Loading Course Data. This may take a bit.
 					</h2>
+					<p className="text-center text-sm text-gray-600">
+						Fetching: {courseNames.join(", ")}
+					</p>
 				</div>
 			) : (
 				<>
@@ -169,16 +178,17 @@ export function TeeTimeTable({ data, pending }: { data: TeeTime[]; pending: bool
 												className="p-2 cursor-pointer"
 												onClick={header.column.getToggleSortingHandler()}
 											>
-											<div className="flex items-center gap-1">
-												{flexRender(
-													header.column.columnDef.header,
-													header.getContext()
-												)}
-												{{
-													asc: <ArrowUpIcon className="size-4" />,
-													desc: <ArrowDownIcon className="size-4" />,
-												}[header.column.getIsSorted() as string] ?? null}
-											</div>
+												<div className="flex items-center gap-1">
+													{flexRender(
+														header.column.columnDef.header,
+														header.getContext()
+													)}
+													{{
+														asc: <ArrowUpIcon className="size-4" />,
+														desc: <ArrowDownIcon className="size-4" />,
+													}[header.column.getIsSorted() as string] ??
+														null}
+												</div>
 											</th>
 										))}
 									</tr>

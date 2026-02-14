@@ -101,6 +101,10 @@ export async function fetchTeeTimes(
 		};
 	} catch (error) {
 		captureError(error, { scrapeDate: dateString }, "fatal");
-		return { ...prevState, teeTimes: [], error: "An unexpected error occurred. Please try again." };
+		return {
+			...prevState,
+			teeTimes: [],
+			error: "An unexpected error occurred. Please try again.",
+		};
 	}
 }

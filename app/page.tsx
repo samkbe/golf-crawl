@@ -1,12 +1,14 @@
 "use client";
 import { fetchTeeTimes } from "./actions";
-import { useActionState } from "react";
+import { useActionState, useEffect } from "react";
 import { useState } from "react";
 import { TeeTimeTable } from "./components/teeTimeTable";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { toast } from "sonner";
+import { ErrorBoundary } from "./components/errorBoundary";
 
 const courses = [
 	{
@@ -59,24 +61,49 @@ export default function Home() {
 	});
 
 	const [allSelected, setAllSelected] = useState(false);
+	const [hasSubmitted, setHasSubmitted] = useState(false);
+	const [selectedCourseNames, setSelectedCourseNames] = useState<string[]>([]);
+
+	useEffect(() => {
+		if (state.error) {
+			if (state.teeTimes.length > 0) {
+				toast.warning(state.error);
+			} else {
+				toast.error(state.error);
+			}
+		}
+	}, [state.error, state.teeTimes]);
 
 	return (
 		<div className="flex flex-col items-center p-2 min-h-screen justify-center">
 			<h1 className="mt-4 text-4xl font-bold">ATX Tee Times</h1>
 			<form
 				action={formAction}
+				onSubmit={(e) => {
+					setHasSubmitted(true);
+					const formData = new FormData(e.currentTarget);
+					if (formData.get("all") === "on") {
+						setSelectedCourseNames(courses.map((c) => c.title));
+					} else {
+						const selectedKeys = formData.getAll("courses") as string[];
+						setSelectedCourseNames(
+							courses.filter((c) => selectedKeys.includes(c.key)).map((c) => c.title)
+						);
+					}
+				}}
 				className="max-w-2xl rounded-lg p-4 mt-4 md:mx-auto bg-white/50 backdrop-blur-md"
 			>
 				<div className="flex items-center gap-2">
 					<Label htmlFor="date">Date:</Label>
 					<Input id="date" name="date" type="date" required className="w-auto" />
 				</div>
-				<div
-					className={`flex flex-wrap my-4 gap-y-3 ${allSelected ? "opacity-25" : ""}`}
-				>
+				<div className={`flex flex-wrap my-4 gap-y-3 ${allSelected ? "opacity-25" : ""}`}>
 					{courses.map(({ title, key }) => {
 						return (
-							<div className="basis-1/2 md:basis-1/3 flex items-center gap-2" key={key}>
+							<div
+								className="basis-1/2 md:basis-1/3 flex items-center gap-2"
+								key={key}
+							>
 								<Checkbox
 									id={key}
 									value={key}
@@ -96,17 +123,23 @@ export default function Home() {
 						name="all"
 						onCheckedChange={(checked) => setAllSelected(checked === true)}
 					/>
-					<Label htmlFor="all" className="cursor-pointer">All Courses</Label>
+					<Label htmlFor="all" className="cursor-pointer">
+						All Courses
+					</Label>
 				</div>
-				<Button
-					className="w-full"
-					disabled={pending}
-					type="submit"
-				>
+				<Button className="w-full" disabled={pending} type="submit">
 					{pending ? "Fetching Tee Times..." : "Find Tee Times"}
 				</Button>
 			</form>
-			<TeeTimeTable data={state.teeTimes} pending={pending} />
+			{hasSubmitted && (
+				<ErrorBoundary>
+					<TeeTimeTable
+						data={state.teeTimes}
+						pending={pending}
+						courseNames={selectedCourseNames}
+					/>
+				</ErrorBoundary>
+			)}
 		</div>
 	);
 }
