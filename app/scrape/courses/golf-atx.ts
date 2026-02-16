@@ -1,8 +1,8 @@
 import "server-only";
-import type { TeeTime } from "../../types";
-import { cacheGet, cacheSet, reviveTeeTimes } from "../../cache";
-import { toMmDdYyyy } from "../helpers";
-import { launchBrowser } from "../browser";
+import type { TeeTime } from "@/app/types";
+import { cacheGet, cacheSet, reviveTeeTimes } from "@/app/cache";
+import { toMmDdYyyy } from "@/app/scrape/helpers";
+import { launchBrowser } from "@/app/scrape/browser";
 import { ParseError, ScrapeError } from "@/app/errors";
 import { captureError } from "@/app/lib/logger";
 
