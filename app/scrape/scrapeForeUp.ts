@@ -1,10 +1,10 @@
 import "server-only";
-import type { TeeTime } from "../types";
+import type { TeeTime } from "@/app/types";
 import type { ElementHandle } from "puppeteer";
-import { mergeDateWithTimeAlt, toMmDdYyyyDash } from "./helpers";
-import { launchBrowser } from "./browser";
-import { captureMessage } from "../lib/logger";
-import { ParseError } from "../errors";
+import { mergeDateWithTimeAlt, toMmDdYyyyDash } from "@/app/scrape/helpers";
+import { launchBrowser } from "@/app/scrape/browser";
+import { captureMessage } from "@/app/lib/logger";
+import { ParseError } from "@/app/errors";
 
 const RESULTS_SEL = ".time-tile, .time-tile-ob-no-details";
 const DATE_INPUT = "input[name='date']";

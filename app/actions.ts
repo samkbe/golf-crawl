@@ -1,7 +1,7 @@
 "use server";
-import { FetchTeeTimesState } from "./types";
-import { courses } from "./courses";
-import { captureError } from "./lib/logger";
+import { FetchTeeTimesState } from "@/app/types";
+import { courses } from "@/app/courses";
+import { captureError } from "@/app/lib/logger";
 
 export async function fetchTeeTimes(
 	prevState: FetchTeeTimesState,

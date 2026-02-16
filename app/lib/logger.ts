@@ -1,5 +1,5 @@
 import * as Sentry from "@sentry/nextjs";
-import { ScrapeError, BrowserLaunchError, ParseError } from "../errors";
+import { ScrapeError, BrowserLaunchError, ParseError } from "@/app/errors";
 
 type Severity = "info" | "warning" | "error" | "fatal";
 

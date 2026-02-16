@@ -1,6 +1,6 @@
 import "server-only";
-import { captureError } from "../lib/logger";
-import { BrowserLaunchError } from "../errors";
+import { captureError } from "@/app/lib/logger";
+import { BrowserLaunchError } from "@/app/errors";
 
 export async function launchBrowser() {
 	try {

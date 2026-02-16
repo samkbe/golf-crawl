@@ -13,7 +13,7 @@ import { ArrowUpIcon, ArrowDownIcon } from "lucide-react";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Slider } from "@/components/ui/slider";
 import { Label } from "@/components/ui/label";
-import type { TeeTime } from "../types";
+import type { TeeTime } from "@/app/types";
 import type { SortingState, ColumnFiltersState } from "@tanstack/react-table";
 
 const columnHelper = createColumnHelper<TeeTime>();

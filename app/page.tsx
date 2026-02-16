@@ -1,14 +1,14 @@
 "use client";
-import { fetchTeeTimes } from "./actions";
+import { fetchTeeTimes } from "@/app/actions";
 import { useActionState, useEffect } from "react";
 import { useState } from "react";
-import { TeeTimeTable } from "./components/teeTimeTable";
+import { TeeTimeTable } from "@/app/components/teeTimeTable";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-import { ErrorBoundary } from "./components/errorBoundary";
+import { ErrorBoundary } from "@/app/components/errorBoundary";
 
 const courses = [
 	{

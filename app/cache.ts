@@ -1,5 +1,5 @@
 import { Redis } from "@upstash/redis";
-import type { TeeTime } from "./types";
+import type { TeeTime } from "@/app/types";
 
 const redis = Redis.fromEnv();
 

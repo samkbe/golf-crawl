@@ -1,11 +1,11 @@
-import type { TeeTime } from "./types";
-import { scrapeCrystalFalls } from "./scrape/courses/crystal-falls";
-import { scrapeShadowGlen } from "./scrape/courses/shadow-glen";
-import { scrapeHarveyPenick } from "./scrape/courses/harvey-penick";
-import { scrapeFalconhead } from "./scrape/courses/falconhead";
-import { scrapeAveryRanch } from "./scrape/courses/avery-ranch";
-import { scrapeTeravista } from "./scrape/courses/teravista";
-import { golfAtxResults } from "./scrape/courses/golf-atx";
+import type { TeeTime } from "@/app/types";
+import { scrapeCrystalFalls } from "@/app/scrape/courses/crystal-falls";
+import { scrapeShadowGlen } from "@/app/scrape/courses/shadow-glen";
+import { scrapeHarveyPenick } from "@/app/scrape/courses/harvey-penick";
+import { scrapeFalconhead } from "@/app/scrape/courses/falconhead";
+import { scrapeAveryRanch } from "@/app/scrape/courses/avery-ranch";
+import { scrapeTeravista } from "@/app/scrape/courses/teravista";
+import { golfAtxResults } from "@/app/scrape/courses/golf-atx";
 
 type course = {
 	key: string;

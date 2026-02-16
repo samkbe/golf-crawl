@@ -1,8 +1,8 @@
 import "server-only";
-import type { TeeTime } from "../types";
-import { mergeDateWithTime } from "./helpers";
-import { launchBrowser } from "./browser";
-import { ParseError } from "../errors";
+import type { TeeTime } from "@/app/types";
+import { mergeDateWithTime } from "@/app/scrape/helpers";
+import { launchBrowser } from "@/app/scrape/browser";
+import { ParseError } from "@/app/errors";
 
 export default async function scrapeTeeItUp(date: string, url: string, courseName: string) {
 	// READ: url must not contain any url params besides 'course'
