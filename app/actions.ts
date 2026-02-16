@@ -1,7 +1,6 @@
 "use server";
-import { FetchTeeTimesState, TeeTime } from "./types";
+import { FetchTeeTimesState } from "./types";
 import { courses } from "./courses";
-import { cache } from "./cache";
 import { captureError } from "./lib/logger";
 
 export async function fetchTeeTimes(
@@ -50,15 +49,7 @@ export async function fetchTeeTimes(
 				selectedCourses.map(async (item) => {
 					if (item) {
 						if (item.golfAtxCourse) return item.fetchFunction(dateString, item.key);
-
-						const cacheKey = `${dateString}::${item.key}`;
-						const cached = cache.get(cacheKey) as TeeTime[] | undefined;
-
-						if (cached) return cached;
-
-						const result = await item.fetchFunction(dateString);
-						cache.set(cacheKey, result);
-						return result;
+						return await item.fetchFunction(dateString);
 					}
 				})
 			)

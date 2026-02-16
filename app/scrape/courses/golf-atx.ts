@@ -1,6 +1,6 @@
 import "server-only";
 import type { TeeTime } from "../../types";
-import { cache } from "../../cache";
+import { cacheGet, cacheSet, reviveTeeTimes } from "../../cache";
 import { toMmDdYyyy } from "../helpers";
 import { launchBrowser } from "../browser";
 import { ParseError, ScrapeError } from "@/app/errors";
@@ -13,7 +13,9 @@ const courseKeyMap: { [key: string]: string } = {
 	"Lions Municipal Golf Course": "lions",
 };
 
-export async function scrapeGolfAtx(targetDate: string) {
+const inflightRequests = new Map<string, Promise<TeeTime[]>>();
+
+async function scrapeGolfAtx(targetDate: string) {
 	const browser = await launchBrowser();
 	try {
 		const page = await browser.newPage();
@@ -162,24 +164,34 @@ export async function scrapeGolfAtx(targetDate: string) {
 
 export async function golfAtxResults(targetDate: string, key?: string) {
 	const cacheKey = `${targetDate}::golfAtx`;
-	const cached = cache.get(cacheKey) as TeeTime[] | undefined;
+	const cached = await cacheGet<TeeTime[]>(cacheKey);
 
 	if (cached) {
-		return cached.filter((item) => item.golfAtxKey === key);
+		return reviveTeeTimes(cached).filter((item) => item.golfAtxKey === key);
 	}
 
-	try {
-		const result = await scrapeGolfAtx(targetDate);
-		cache.set(cacheKey, result);
-		return result.filter((item) => item.golfAtxKey === key);
-	} catch (error) {
-		const wrapped = new ScrapeError("Failed to scrape Golf ATX", {
-			courseName: "Golf ATX",
-			scrapeDate: targetDate,
-			scraperType: "golfatx",
-			cause: error,
-		});
-		captureError(wrapped);
-		throw wrapped;
+	// Deduplicate concurrent requests within the same invocation
+	if (!inflightRequests.has(cacheKey)) {
+		const promise = scrapeGolfAtx(targetDate)
+			.then(async (result) => {
+				await cacheSet(cacheKey, result);
+				inflightRequests.delete(cacheKey);
+				return result;
+			})
+			.catch((error) => {
+				inflightRequests.delete(cacheKey);
+				const wrapped = new ScrapeError("Failed to scrape Golf ATX", {
+					courseName: "Golf ATX",
+					scrapeDate: targetDate,
+					scraperType: "golfatx",
+					cause: error,
+				});
+				captureError(wrapped);
+				throw wrapped;
+			});
+		inflightRequests.set(cacheKey, promise);
 	}
+
+	const result = await inflightRequests.get(cacheKey)!;
+	return result.filter((item) => item.golfAtxKey === key);
 }
