@@ -6,11 +6,12 @@ import { scrapeFalconhead } from "@/app/scrape/courses/falconhead";
 import { scrapeAveryRanch } from "@/app/scrape/courses/avery-ranch";
 import { scrapeTeravista } from "@/app/scrape/courses/teravista";
 import { golfAtxResults } from "@/app/scrape/courses/golf-atx";
+import type { Browser } from "puppeteer";
 
 type course = {
 	key: string;
 	title: string;
-	fetchFunction: (date: string, golfAtxcourse?: string) => Promise<TeeTime[] | undefined>;
+	fetchFunction: (date: string, browser: Browser, golfAtxcourse?: string) => Promise<TeeTime[] | undefined>;
 	golfAtxCourse?: boolean;
 };
 

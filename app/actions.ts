@@ -2,6 +2,7 @@
 import { FetchTeeTimesState } from "@/app/types";
 import { courses } from "@/app/courses";
 import { captureError } from "@/app/lib/logger";
+import { launchBrowser } from "@/app/scrape/browser";
 
 export async function fetchTeeTimes(
 	prevState: FetchTeeTimesState,
@@ -42,14 +43,16 @@ export async function fetchTeeTimes(
 	}
 
 	const failedCourses: string[] = [];
-
+	const browser = await launchBrowser();
+	
 	try {
 		const teeTimes = (
 			await Promise.allSettled(
 				selectedCourses.map(async (item) => {
 					if (item) {
-						if (item.golfAtxCourse) return item.fetchFunction(dateString, item.key);
-						return await item.fetchFunction(dateString);
+						if (item.golfAtxCourse)
+							return item.fetchFunction(dateString, browser, item.key);
+						return await item.fetchFunction(dateString, browser);
 					}
 				})
 			)
@@ -97,5 +100,7 @@ export async function fetchTeeTimes(
 			teeTimes: [],
 			error: "An unexpected error occurred. Please try again.",
 		};
+	} finally {
+		await browser.close();
 	}
 }

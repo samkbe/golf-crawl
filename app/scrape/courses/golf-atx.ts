@@ -2,9 +2,9 @@ import "server-only";
 import type { TeeTime } from "@/app/types";
 import { cacheGet, cacheSet, reviveTeeTimes } from "@/app/cache";
 import { toMmDdYyyy } from "@/app/scrape/helpers";
-import { launchBrowser } from "@/app/scrape/browser";
 import { ParseError, ScrapeError } from "@/app/errors";
 import { captureError } from "@/app/lib/logger";
+import type { Browser } from "puppeteer";
 
 const courseKeyMap: { [key: string]: string } = {
 	"Jimmy Clay Golf Course": "jimmyClay",
@@ -15,11 +15,10 @@ const courseKeyMap: { [key: string]: string } = {
 
 const inflightRequests = new Map<string, Promise<TeeTime[]>>();
 
-async function scrapeGolfAtx(targetDate: string) {
-	const browser = await launchBrowser();
-	try {
-		const page = await browser.newPage();
+async function scrapeGolfAtx(targetDate: string, browser: Browser) {
+	const page = await browser.newPage();
 
+	try {
 		// Step 1: Go to the main page to retrieve the CSRF token
 		await page.goto(
 			"https://txaustinweb.myvscloud.com/webtrac/web/search.html?display=detail&module=GR&secondarycode=1"
@@ -158,11 +157,11 @@ async function scrapeGolfAtx(targetDate: string) {
 		} while (hasNextPage);
 		return teeTimes;
 	} finally {
-		await browser.close();
+		await page.close();
 	}
 }
 
-export async function golfAtxResults(targetDate: string, key?: string) {
+export async function golfAtxResults(targetDate: string, browser: Browser, key?: string) {
 	const cacheKey = `${targetDate}::golfAtx`;
 	const cached = await cacheGet<TeeTime[]>(cacheKey);
 
@@ -172,7 +171,7 @@ export async function golfAtxResults(targetDate: string, key?: string) {
 
 	// Deduplicate concurrent requests within the same invocation
 	if (!inflightRequests.has(cacheKey)) {
-		const promise = scrapeGolfAtx(targetDate)
+		const promise = scrapeGolfAtx(targetDate, browser)
 			.then(async (result) => {
 				await cacheSet(cacheKey, result);
 				inflightRequests.delete(cacheKey);

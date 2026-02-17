@@ -3,8 +3,9 @@ import { captureError } from "@/app/lib/logger";
 import { ScrapeError } from "@/app/errors";
 import { cacheGet, cacheSet, reviveTeeTimes } from "@/app/cache";
 import type { TeeTime } from "@/app/types";
+import type { Browser } from "puppeteer";
 
-export async function scrapeRiverside(date: string) {
+export async function scrapeRiverside(date: string, browser: Browser) {
 	const cacheKey = `${date}::riverside`;
 	const cached = await cacheGet<TeeTime[]>(cacheKey);
 	if (cached) return reviveTeeTimes(cached);
@@ -13,6 +14,7 @@ export async function scrapeRiverside(date: string) {
 			date,
 			"https://foreupsoftware.com/index.php/booking/21469/7880#/teetimes",
 			"Riverside",
+			browser,
 			"https://foreupsoftware.com/index.php/booking/21469/7880#/teetimes"
 		);
 		await cacheSet(cacheKey, result);

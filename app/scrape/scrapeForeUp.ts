@@ -1,8 +1,7 @@
 import "server-only";
 import type { TeeTime } from "@/app/types";
-import type { ElementHandle } from "puppeteer";
+import type { ElementHandle, Browser } from "puppeteer";
 import { mergeDateWithTimeAlt, toMmDdYyyyDash } from "@/app/scrape/helpers";
-import { launchBrowser } from "@/app/scrape/browser";
 import { captureMessage } from "@/app/lib/logger";
 import { ParseError } from "@/app/errors";
 
@@ -14,12 +13,12 @@ export default async function scrapeForeUp(
 	date: string,
 	url: string,
 	courseName: string,
+	browser: Browser,
 	bookingLink?: string
 ) {
 	// READ: url must not contain any url params
 	// Example: https://foreupsoftware.com/index.php/booking/22221/10177#/teetimes`
 
-	const browser = await launchBrowser();
 	const page = await browser.newPage();
 	try {
 		await page.goto(url, { waitUntil: "domcontentloaded" });
@@ -125,7 +124,7 @@ export default async function scrapeForeUp(
 		}
 		return teeTimes;
 	} finally {
-		await browser.close();
+		await page.close();
 	}
 }
 
