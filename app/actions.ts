@@ -1,8 +1,11 @@
 "use server";
-import { FetchTeeTimesState } from "@/app/types";
+import type { TeeTime, FetchTeeTimesState } from "@/app/types";
 import { courses } from "@/app/courses";
+import type { Platform } from "@/app/courses";
 import { captureError } from "@/app/lib/logger";
 import { launchBrowser } from "@/app/scrape/browser";
+
+const SAME_PLATFORM_DELAY_MS = 1500;
 
 export async function fetchTeeTimes(
 	prevState: FetchTeeTimesState,
@@ -21,13 +24,11 @@ export async function fetchTeeTimes(
 	let selectedCourses;
 
 	if (allSelected) {
-		selectedCourses = courses.map(({ fetchFunction, key, golfAtxCourse }) => {
-			return {
-				fetchFunction,
-				key,
-				golfAtxCourse,
-			};
-		});
+		selectedCourses = courses.map(({ fetchFunction, key, platform }) => ({
+			fetchFunction,
+			key,
+			platform,
+		}));
 	} else {
 		selectedCourses = [...formData.getAll("courses")]
 			.map((val) => {
@@ -36,7 +37,7 @@ export async function fetchTeeTimes(
 					return {
 						fetchFunction: fn.fetchFunction,
 						key: fn.key,
-						golfAtxCourse: fn.golfAtxCourse,
+						platform: fn.platform,
 					};
 			})
 			.filter(Boolean);
@@ -44,30 +45,47 @@ export async function fetchTeeTimes(
 
 	const failedCourses: string[] = [];
 	const browser = await launchBrowser();
-	
+
 	try {
-		const teeTimes = (
-			await Promise.allSettled(
-				selectedCourses.map(async (item) => {
-					if (item) {
-						if (item.golfAtxCourse)
-							return item.fetchFunction(dateString, browser, item.key);
-						return await item.fetchFunction(dateString, browser);
+		// Group courses by platform to avoid rate limits on the same domain
+		const groups = new Map<Platform, typeof selectedCourses>();
+		for (const item of selectedCourses) {
+			if (!item) continue;
+			const group = groups.get(item.platform) ?? [];
+			group.push(item);
+			groups.set(item.platform, group);
+		}
+
+		// Run each platform group in parallel, but serialize within each group
+		const groupResults = await Promise.allSettled(
+			[...groups.values()].map(async (group) => {
+				const results: (TeeTime[] | undefined)[] = [];
+				for (let i = 0; i < group.length; i++) {
+					const item = group[i];
+					if (!item) continue;
+
+					if (i > 0) {
+						await new Promise((r) => setTimeout(r, SAME_PLATFORM_DELAY_MS));
 					}
-				})
-			)
-		)
-			.map((result, i) => {
-				if (result.status === "fulfilled") {
-					return result.value;
-				} else {
-					const courseKey = selectedCourses[i]?.key ?? "unknown";
-					failedCourses.push(courseKey);
-					return undefined;
+
+					try {
+						const result =
+							item.platform === "golfatx"
+								? await item.fetchFunction(dateString, browser, item.key)
+								: await item.fetchFunction(dateString, browser);
+						results.push(result);
+					} catch {
+						failedCourses.push(item.key);
+					}
 				}
+				return results;
 			})
+		);
+
+		const teeTimes = groupResults
+			.flatMap((result) => (result.status === "fulfilled" ? result.value : []))
 			.flat()
-			.filter((teeTime) => teeTime !== undefined);
+			.filter((teeTime): teeTime is TeeTime => teeTime !== undefined);
 
 		// Every course failed
 		if (teeTimes.length === 0 && failedCourses.length > 0) {

@@ -8,27 +8,24 @@ import { scrapeTeravista } from "@/app/scrape/courses/teravista";
 import { golfAtxResults } from "@/app/scrape/courses/golf-atx";
 import type { Browser } from "puppeteer";
 
+export type Platform = "teeitup" | "foreup" | "golfatx";
+
 type course = {
 	key: string;
 	title: string;
+	platform: Platform;
 	fetchFunction: (date: string, browser: Browser, golfAtxcourse?: string) => Promise<TeeTime[] | undefined>;
-	golfAtxCourse?: boolean;
 };
 
 export const courses: course[] = [
-	{ title: "Crystal Falls", key: "crystalFalls", fetchFunction: scrapeCrystalFalls },
-	{ title: "Shadowglen", key: "shadowGlen", fetchFunction: scrapeShadowGlen },
-	{ title: "Harvey Penick", key: "harveyPenick", fetchFunction: scrapeHarveyPenick },
-	{ title: "Falconhead", key: "falconhead", fetchFunction: scrapeFalconhead },
-	{ title: "Avery Ranch", key: "averyRanch", fetchFunction: scrapeAveryRanch },
-	{ title: "Teravista", key: "teravista", fetchFunction: scrapeTeravista },
-	{ title: "Lions", key: "lions", golfAtxCourse: true, fetchFunction: golfAtxResults },
-	{ title: "Jimmy Clay", key: "jimmyClay", golfAtxCourse: true, fetchFunction: golfAtxResults },
-	{ title: "Roy Kizer", key: "royKizer", golfAtxCourse: true, fetchFunction: golfAtxResults },
-	{
-		title: "Morris Williams",
-		key: "morrisWilliams",
-		golfAtxCourse: true,
-		fetchFunction: golfAtxResults,
-	},
+	{ title: "Crystal Falls", key: "crystalFalls", platform: "teeitup", fetchFunction: scrapeCrystalFalls },
+	{ title: "Shadowglen", key: "shadowGlen", platform: "teeitup", fetchFunction: scrapeShadowGlen },
+	{ title: "Harvey Penick", key: "harveyPenick", platform: "teeitup", fetchFunction: scrapeHarveyPenick },
+	{ title: "Falconhead", key: "falconhead", platform: "foreup", fetchFunction: scrapeFalconhead },
+	{ title: "Avery Ranch", key: "averyRanch", platform: "foreup", fetchFunction: scrapeAveryRanch },
+	{ title: "Teravista", key: "teravista", platform: "foreup", fetchFunction: scrapeTeravista },
+	{ title: "Lions", key: "lions", platform: "golfatx", fetchFunction: golfAtxResults },
+	{ title: "Jimmy Clay", key: "jimmyClay", platform: "golfatx", fetchFunction: golfAtxResults },
+	{ title: "Roy Kizer", key: "royKizer", platform: "golfatx", fetchFunction: golfAtxResults },
+	{ title: "Morris Williams", key: "morrisWilliams", platform: "golfatx", fetchFunction: golfAtxResults },
 ];
