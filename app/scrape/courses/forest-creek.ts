@@ -18,8 +18,12 @@ export async function scrapeForestCreek(date: string) {
 			"Forest Creek",
 			"https://www.chronogolf.com/marketplace/forest-creek-golf-club"
 		);
-		await cacheSet(cacheKey, result);
-		return result;
+		const normalized = result.map((teeTime) => ({
+			...teeTime,
+			openSlots: "1-4",
+		}));
+		await cacheSet(cacheKey, normalized);
+		return normalized;
 	} catch (error) {
 		const wrapped = new ScrapeError("Failed to scrape Forest Creek", {
 			courseName: "Forest Creek",
