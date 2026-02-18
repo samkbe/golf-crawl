@@ -80,7 +80,7 @@ export function TeeTimeTable({
 }) {
 	const [allCourseNames, setAllCourseNames] = useState<string[]>([]);
 	const [activeCourses, setActiveCourses] = useState<string[]>([]);
-	const [sorting, setSorting] = useState<SortingState>([]);
+	const [sorting, setSorting] = useState<SortingState>([{ id: "date", desc: false }]);
 	const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
 	const [priceRange, setPriceRange] = useState<[number, number]>([0, 500]);
 
