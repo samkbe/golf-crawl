@@ -3,9 +3,8 @@ import { captureError } from "@/app/lib/logger";
 import { ScrapeError } from "@/app/errors";
 import { cacheGet, cacheSet, reviveTeeTimes } from "@/app/cache";
 import type { TeeTime } from "@/app/types";
-import type { Browser } from "puppeteer";
 
-export async function scrapeTeravista(date: string, browser: Browser) {
+export async function scrapeTeravista(date: string) {
 	const cacheKey = `${date}::teravista`;
 	const cached = await cacheGet<TeeTime[]>(cacheKey);
 	if (cached) return reviveTeeTimes(cached);
@@ -13,9 +12,9 @@ export async function scrapeTeravista(date: string, browser: Browser) {
 	try {
 		const result = await scrapeForeUp(
 			date,
-			"https://foreupsoftware.com/index.php/booking/23033/10176#/teetimes",
+			"10176",
+			"14332",
 			"Teravista",
-			browser,
 			"https://foreupsoftware.com/index.php/booking/23033/10176#/teetimes"
 		);
 		await cacheSet(cacheKey, result);
