@@ -54,6 +54,10 @@ const courses = [
 		title: "Jimmy Clay",
 		key: "jimmyClay",
 	},
+	{
+		title: "Riverside",
+		key: "riverside",
+	}
 ];
 
 export default function Home() {

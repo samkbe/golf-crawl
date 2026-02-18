@@ -5,6 +5,7 @@ import { scrapeHarveyPenick } from "@/app/scrape/courses/harvey-penick";
 import { scrapeFalconhead } from "@/app/scrape/courses/falconhead";
 import { scrapeAveryRanch } from "@/app/scrape/courses/avery-ranch";
 import { scrapeTeravista } from "@/app/scrape/courses/teravista";
+import { scrapeRiverside } from "@/app/scrape/courses/riverside";
 import { golfAtxResults } from "@/app/scrape/courses/golf-atx";
 import type { Browser } from "puppeteer";
 
@@ -24,6 +25,7 @@ export const courses: course[] = [
 	{ title: "Falconhead", key: "falconhead", platform: "foreup", fetchFunction: scrapeFalconhead },
 	{ title: "Avery Ranch", key: "averyRanch", platform: "foreup", fetchFunction: scrapeAveryRanch },
 	{ title: "Teravista", key: "teravista", platform: "foreup", fetchFunction: scrapeTeravista },
+	{ title: "Riverside", key: "riverside", platform: "foreup", fetchFunction: scrapeRiverside },
 	{ title: "Lions", key: "lions", platform: "golfatx", fetchFunction: golfAtxResults },
 	{ title: "Jimmy Clay", key: "jimmyClay", platform: "golfatx", fetchFunction: golfAtxResults },
 	{ title: "Roy Kizer", key: "royKizer", platform: "golfatx", fetchFunction: golfAtxResults },

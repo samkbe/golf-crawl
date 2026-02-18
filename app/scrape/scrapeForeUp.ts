@@ -19,7 +19,7 @@ const ForeUpResponseSchema = z.array(ForeUpEntrySchema);
 export default async function scrapeForeUp(
 	date: string,
 	scheduleId: string,
-	bookingClass: string,
+	bookingClass: string | undefined,
 	courseName: string,
 	bookingLink?: string
 ) {
@@ -30,12 +30,15 @@ export default async function scrapeForeUp(
 		date: mmddyyyy,
 		holes: "all",
 		players: "0",
-		booking_class: bookingClass,
 		schedule_id: scheduleId,
 		"schedule_ids[]": scheduleId,
 		specials_only: "0",
 		api_key: "no_limits",
 	});
+
+	if (bookingClass) {
+		params.set("booking_class", bookingClass);
+	}
 
 	const res = await fetch(`${API_BASE}?${params}`);
 
