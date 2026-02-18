@@ -1,123 +1,87 @@
 import "server-only";
+import { z } from "zod";
 import type { TeeTime } from "@/app/types";
-import { mergeDateWithTime } from "@/app/scrape/helpers";
 import { ParseError } from "@/app/errors";
-import type { Browser } from "puppeteer";
+
+const API_BASE = "https://phx-api-be-east-1b.kenna.io/v2/tee-times";
+
+const RateSchema = z.object({
+	greenFeeCart: z.number().optional(),
+	allowedPlayers: z.array(z.number()),
+});
+
+const TeeTimeEntrySchema = z.object({
+	teetime: z.string(),
+	maxPlayers: z.number(),
+	bookedPlayers: z.number(),
+	rates: z.array(RateSchema).min(1),
+});
+
+const TeeItUpResponseSchema = z.array(
+	z.object({
+		teetimes: z.array(TeeTimeEntrySchema),
+	})
+);
 
 export default async function scrapeTeeItUp(
 	date: string,
 	url: string,
-	courseName: string,
-	browser: Browser
+	courseName: string
 ) {
-	// READ: url must not contain any url params besides 'course'
-	// Example: https://crystal-falls-golf-club-2.book.teeitup.com/?course=5741`
+	const parsed = new URL(url);
+	const alias = parsed.hostname.split(".")[0];
+	const facilityId = parsed.searchParams.get("course");
 
-	const page = await browser.newPage();
+	if (!facilityId) {
+		throw new ParseError("Missing course param in TeeItUp URL", {
+			courseName,
+			field: "facilityId",
+		});
+	}
 
-	try {
-		const u = new URL(url);
-		u.searchParams.set("date", date);
-		u.searchParams.set("max", "9999");
+	const apiUrl = `${API_BASE}?date=${date}&facilityIds=${facilityId}`;
 
-		await page.goto(u.toString());
+	const res = await fetch(apiUrl, {
+		headers: { "x-be-alias": alias },
+	});
 
-		const bookingPanelSelector =
-			'div[role="group"]:has(> div button[data-testid="teetimes_book_now_button"], > div button[data-testid="teetimes_choose_rate_button"])';
+	if (!res.ok) {
+		throw new ParseError(`TeeItUp API returned ${res.status}`, {
+			courseName,
+			field: "apiResponse",
+		});
+	}
 
-		try {
-			await page.waitForSelector(bookingPanelSelector, { timeout: 10000 });
-		} catch (error) {
-			throw new ParseError(
-				"Tee time booking panels not found — page structure may have changed",
-				{
-					courseName,
-					field: "bookingPanels",
-					cause: error,
-				}
-			);
-		}
+	const json = await res.json();
+	const result = TeeItUpResponseSchema.safeParse(json);
 
-		const bookingPanels = await page.$$(bookingPanelSelector);
+	if (!result.success) {
+		throw new ParseError("TeeItUp API response shape changed", {
+			courseName,
+			field: "apiResponse",
+			cause: result.error,
+		});
+	}
 
-		const teeTimes: TeeTime[] = [];
+	const bookingLink = url;
+	const teeTimes: TeeTime[] = [];
 
-		for (const bookingPanel of bookingPanels) {
-			let timeString = await bookingPanel.$eval(
-				"[data-testid='teetimes-tile-time']",
-				(el) => el.textContent
-			);
-			if (!timeString)
-				throw new ParseError("Couldn't parse time text content", {
-					courseName,
-					field: "time",
-				});
-
-			timeString = timeString.trim();
-
-			const time = mergeDateWithTime(date, timeString);
-
-			// Available Slots = data-testid="teetimes-tile-available-players"
-			// Either 1, 1-3, 2, 1-4
-
-			const slotsMap = {
-				"1": "1",
-				"2": "2",
-				"1 or 2": "2",
-				"1 - 3": "3",
-				"1 - 4": "4",
-				"2 - 4": "4",
-			};
-			let slotsString = await bookingPanel.$eval(
-				"[data-testid='teetimes-tile-available-players']",
-				(el) => el.textContent
-			);
-
-			if (!slotsString)
-				throw new ParseError("Couldn't parse open slots content", {
-					courseName,
-					field: "openSlots",
-				});
-
-			slotsString = slotsString.trim();
-
-			if (!(slotsString in slotsMap)) {
-				throw new ParseError(`Unexpected slots format: ${slotsString}`, {
-					courseName,
-					field: "openSlots",
-				});
-			}
-
-			const openSlots = slotsMap[slotsString as keyof typeof slotsMap];
-
-			const price = await bookingPanel.$$eval(
-				"p.MuiTypography-root.MuiTypography-body1",
-				(elements) => {
-					for (const el of elements) {
-						if (el.textContent?.includes("$")) {
-							return parseFloat(el.textContent.replace(/[$,]/g, ""));
-						}
-					}
-					return null;
-				}
-			);
-
-			if (!price)
-				throw new ParseError("Couldn't parse price", {
-					courseName,
-					field: "price",
-				});
+	for (const group of result.data) {
+		for (const entry of group.teetimes) {
+			const openSlots = String(entry.maxPlayers - entry.bookedPlayers);
+			if (Number(openSlots) <= 0) continue;
+			const greenFee = entry.rates.find((r) => r.greenFeeCart != null)?.greenFeeCart;
+			const price = greenFee != null ? greenFee / 100 : undefined;
 
 			teeTimes.push({
-				date: time,
+				date: new Date(entry.teetime),
 				courseName,
 				openSlots,
 				price,
-				bookingLink: u.toString(),
+				bookingLink,
 			});
 		}
-		return teeTimes;
-	} finally {
-		await page.close();
 	}
+
+	return teeTimes;
 }

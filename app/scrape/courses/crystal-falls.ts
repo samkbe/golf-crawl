@@ -3,9 +3,8 @@ import { captureError } from "@/app/lib/logger";
 import { ScrapeError } from "@/app/errors";
 import { cacheGet, cacheSet, reviveTeeTimes } from "@/app/cache";
 import type { TeeTime } from "@/app/types";
-import type { Browser } from "puppeteer";
 
-export async function scrapeCrystalFalls(date: string, browser: Browser) {
+export async function scrapeCrystalFalls(date: string) {
 	const cacheKey = `${date}::crystalFalls`;
 	const cached = await cacheGet<TeeTime[]>(cacheKey);
 	if (cached) return reviveTeeTimes(cached);
@@ -14,8 +13,7 @@ export async function scrapeCrystalFalls(date: string, browser: Browser) {
 		const result = await scrapeTeeItUp(
 			date,
 			"https://crystal-falls-golf-club-2.book.teeitup.com/?course=5741",
-			"Crystal Falls",
-			browser
+			"Crystal Falls"
 		);
 		await cacheSet(cacheKey, result);
 		return result;
