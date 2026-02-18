@@ -57,6 +57,10 @@ const courses = [
 	{
 		title: "Riverside",
 		key: "riverside",
+	},
+	{
+		title: "Forest Creek",
+		key: "forestCreek",
 	}
 ];
 
@@ -102,7 +106,11 @@ export default function Home() {
 				className="max-w-2xl rounded-lg p-4 mt-4 md:mx-auto bg-white/50 backdrop-blur-md text-md"
 			>
 				<div className="flex items-center gap-2 justify-center">
-					<input type="hidden" name="date" value={date ? format(date, "yyyy-MM-dd") : ""} />
+					<input
+						type="hidden"
+						name="date"
+						value={date ? format(date, "yyyy-MM-dd") : ""}
+					/>
 					<Popover>
 						<PopoverTrigger asChild>
 							<Button
@@ -138,7 +146,7 @@ export default function Home() {
 									name="courses"
 									disabled={allSelected}
 									className="h-6 w-6 md:h-4 md:w-4"
-									/>
+								/>
 								<Label htmlFor={key} className="text-md text-nowrap cursor-pointer">
 									{title}
 								</Label>

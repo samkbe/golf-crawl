@@ -1,4 +1,4 @@
-type ScraperType = "foreup" | "teeitup" | "golfatx";
+type ScraperType = "foreup" | "teeitup" | "golfatx" | "chronogolf";
 
 export class ScrapeError extends Error {
 	public courseName: string;
