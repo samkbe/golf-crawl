@@ -71,15 +71,15 @@ export default async function scrapeTeeItUp(
 
 	for (const group of result.data) {
 		for (const entry of group.teetimes) {
-			const openSlots = String(entry.maxPlayers - entry.bookedPlayers);
-			if (Number(openSlots) <= 0) continue;
+			const maxAllowed = Math.max(...entry.rates.flatMap((r) => r.allowedPlayers));
+			if (maxAllowed <= 0) continue;
 			const greenFee = entry.rates.find((r) => r.greenFeeCart != null)?.greenFeeCart;
 			const price = greenFee != null ? greenFee / 100 : undefined;
 
 			teeTimes.push({
 				date: new Date(entry.teetime),
 				courseName,
-				openSlots,
+				openSlots: String(maxAllowed),
 				price,
 				bookingLink,
 			});
