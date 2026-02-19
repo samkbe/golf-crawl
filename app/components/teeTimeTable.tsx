@@ -124,7 +124,7 @@ export function TeeTimeTable({
 	return (
 		<>
 			{pending ? (
-				<div className="rounded-md my-4 w-full mx-auto max-w-2xl p-4 bg-white/50 backdrop-blur-md animate-pulse-scale min-h-80 flex flex-col justify-center items-center gap-2">
+				<div className="rounded-md p-4 bg-white/50 backdrop-blur-md animate-pulse-scale min-h-80 flex flex-col justify-center items-center gap-2">
 					<h2 className="text-center font-bold">
 						Loading Course Data. This may take a bit.
 					</h2>
@@ -134,7 +134,7 @@ export function TeeTimeTable({
 				</div>
 			) : (
 				<>
-					<div className="rounded-md my-4 w-full mx-auto max-w-2xl p-4 bg-white/50 backdrop-blur-md">
+					<div className="rounded-md mb-4 w-full p-4 bg-white/50 backdrop-blur-md">
 						<h2 className="font-bold">Courses:</h2>
 						<ToggleGroup
 							type="multiple"
@@ -169,7 +169,7 @@ export function TeeTimeTable({
 							/>
 						</div>
 					</div>
-					<div className="overflow-x-auto max-h-80 border rounded-md mb-8 max-w-2xl w-full bg-white/50 backdrop-blur-md">
+					<div className="overflow-x-auto max-h-[70vh] border rounded-md w-full bg-white/50 backdrop-blur-md">
 						<table className="min-w-full text-sm text-left border-collapse">
 							<thead className="bg-gray-200 sticky top-0 z-10">
 								{table.getHeaderGroups().map((headerGroup) => (

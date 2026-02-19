@@ -8,15 +8,9 @@
 	}
 }
 
-html {
-	background: url(../app/bg-image.jpg);
-	background-size: cover;
-	background-repeat: no-repeat;
-}
-
 @layer base {
   :root {
-		--background: 0 0% 100%;
+		--background: 40 33% 97%;
 		--foreground: 0 0% 3.9%;
 		--card: 0 0% 100%;
 		--card-foreground: 0 0% 3.9%;
