@@ -16,7 +16,7 @@ export async function scrapeForestCreek(date: string) {
 			"15579",
 			"139028",
 			"Forest Creek",
-			"https://www.chronogolf.com/marketplace/forest-creek-golf-club"
+			`https://www.chronogolf.com/club/13600/widget?medium=widget&source=club#?course_id=15579&nb_holes=18&date=${date}`
 		);
 		const normalized = result.map((teeTime) => ({
 			...teeTime,

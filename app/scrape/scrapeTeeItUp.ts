@@ -63,7 +63,10 @@ export default async function scrapeTeeItUp(
 		});
 	}
 
-	const bookingLink = url;
+	const bookingUrl = new URL(url);
+	bookingUrl.searchParams.set("date", date);
+	bookingUrl.searchParams.set("max", "999999");
+	const bookingLink = bookingUrl.toString();
 	const teeTimes: TeeTime[] = [];
 
 	for (const group of result.data) {

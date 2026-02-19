@@ -110,12 +110,13 @@ export default function Home() {
 							</AccordionTrigger>
 							<AccordionContent>
 								<div className="flex justify-center pt-2">
-									<Calendar
-										mode="single"
-										selected={date}
-										onSelect={setDate}
-										defaultMonth={date}
-									/>
+								<Calendar
+									mode="single"
+									selected={date}
+									onSelect={setDate}
+									defaultMonth={date}
+									disabled={{ before: new Date() }}
+								/>
 								</div>
 							</AccordionContent>
 						</AccordionItem>

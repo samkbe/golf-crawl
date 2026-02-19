@@ -136,6 +136,7 @@ async function scrapeGolfAtx(targetDate: string, browser: Browser) {
 						courseName,
 						golfAtxKey: courseKey,
 						price: 60,
+						bookingLink: "https://txaustinweb.myvscloud.com/webtrac/web/search.html?display=detail&module=GR",
 					});
 				}
 			}
