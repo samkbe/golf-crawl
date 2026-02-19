@@ -12,6 +12,7 @@ import { useState, useEffect } from "react";
 import { ArrowUpIcon, ArrowDownIcon } from "lucide-react";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Slider } from "@/components/ui/slider";
+
 import { Label } from "@/components/ui/label";
 import type { TeeTime } from "@/app/types";
 import type { SortingState, ColumnFiltersState } from "@tanstack/react-table";
@@ -31,6 +32,11 @@ const columns = [
 		cell: (info) => formatDate(info.getValue()),
 		sortingFn: (a, b) =>
 			new Date(a.original.date).getTime() - new Date(b.original.date).getTime(),
+		filterFn: (row: Row<TeeTime>, _columnId: string, filterValue: [number, number]) => {
+			if (!Array.isArray(filterValue) || filterValue.length !== 2) return true;
+			const minutes = dateToChicagoMinutes(new Date(row.original.date));
+			return minutes >= filterValue[0] && minutes <= filterValue[1];
+		},
 	}),
 	columnHelper.accessor("openSlots", {
 		header: "Open Slots",
@@ -82,7 +88,10 @@ export function TeeTimeTable({
 	const [activeCourses, setActiveCourses] = useState<string[]>([]);
 	const [sorting, setSorting] = useState<SortingState>([{ id: "date", desc: false }]);
 	const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
-	const [priceRange, setPriceRange] = useState<[number, number]>([0, 500]);
+	const [priceRange, setPriceRange] = useState<[number, number]>([0, 300]);
+	const TIME_MIN = 5 * 60;  // 5:00 AM
+	const TIME_MAX = 21 * 60; // 9:00 PM
+	const [timeRange, setTimeRange] = useState<[number, number]>([TIME_MIN, TIME_MAX]);
 
 	useEffect(() => {
 		const unique = [...new Set(data.map((t) => t.courseName))];
@@ -104,6 +113,15 @@ export function TeeTimeTable({
 		setColumnFilters((prev) => {
 			const others = prev.filter((f) => f.id !== "price");
 			return [...others, { id: "price", value: range }];
+		});
+	}
+
+	function updateTimeFilter(range: [number, number]) {
+		setTimeRange(range);
+		setColumnFilters((prev) => {
+			const others = prev.filter((f) => f.id !== "date");
+			if (range[0] === TIME_MIN && range[1] === TIME_MAX) return others;
+			return [...others, { id: "date", value: range }];
 		});
 	}
 
@@ -153,21 +171,39 @@ export function TeeTimeTable({
 								</ToggleGroupItem>
 							))}
 						</ToggleGroup>
-						<div>
-							<h2 className="font-bold">Filters:</h2>
-							<Label className="block mt-2 mb-3">
-								Price: ${priceRange[0]} &ndash; ${priceRange[1]}
-							</Label>
-							<Slider
-								min={0}
-								max={500}
-								step={5}
-								value={priceRange}
-								onValueChange={(value) =>
-									updatePriceFilter(value as [number, number])
-								}
-							/>
+					<div>
+						<h2 className="font-bold">Filters:</h2>
+						<div className="flex flex-col sm:flex-row gap-6 mt-2">
+							<div className="flex-1 min-w-0">
+								<Label className="block mb-3">
+									Price: ${priceRange[0]} &ndash; ${priceRange[1]}
+								</Label>
+								<Slider
+									min={0}
+									max={300}
+									step={5}
+									value={priceRange}
+									onValueChange={(value) =>
+										updatePriceFilter(value as [number, number])
+									}
+								/>
+							</div>
+							<div className="flex-1 min-w-0">
+								<Label className="block mb-3">
+									Time: {minutesToLabel(timeRange[0])} &ndash; {minutesToLabel(timeRange[1])}
+								</Label>
+								<Slider
+									min={TIME_MIN}
+									max={TIME_MAX}
+									step={30}
+									value={timeRange}
+									onValueChange={(value) =>
+										updateTimeFilter(value as [number, number])
+									}
+								/>
+							</div>
 						</div>
+					</div>
 					</div>
 					<div className="overflow-x-auto max-h-[70vh] border rounded-md w-full bg-white/50 backdrop-blur-md">
 						<table className="min-w-full text-sm text-left border-collapse">
@@ -227,4 +263,24 @@ function formatDate(date: Date | string): string {
 		minute: "2-digit",
 		hour12: true,
 	}).format(new Date(date));
+}
+
+function minutesToLabel(minutes: number): string {
+	const h = Math.floor(minutes / 60);
+	const m = minutes % 60;
+	const period = h >= 12 ? "PM" : "AM";
+	const h12 = h % 12 || 12;
+	return m === 0 ? `${h12} ${period}` : `${h12}:${String(m).padStart(2, "0")} ${period}`;
+}
+
+function dateToChicagoMinutes(date: Date): number {
+	const parts = new Intl.DateTimeFormat("en-US", {
+		timeZone: "America/Chicago",
+		hour: "numeric",
+		minute: "2-digit",
+		hour12: false,
+	}).formatToParts(date);
+	const hour = Number(parts.find((p) => p.type === "hour")?.value ?? 0);
+	const minute = Number(parts.find((p) => p.type === "minute")?.value ?? 0);
+	return hour * 60 + minute;
 }
