@@ -35,7 +35,14 @@ export default async function scrapeChronoGolf(
 		nb_holes: "18",
 	});
 
-	const res = await fetch(`${API_BASE}/${clubId}/teetimes?${params}`);
+	const res = await fetch(`${API_BASE}/${clubId}/teetimes?${params}`, {
+		headers: {
+			"User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+			"Accept": "application/json, text/plain, */*",
+			"Referer": "https://www.chronogolf.com/",
+			"Origin": "https://www.chronogolf.com",
+		  },
+	});
 
 	if (!res.ok) {
 		throw new ParseError(`ChronoGolf API returned ${res.status}`, {
