@@ -47,7 +47,7 @@ export async function fetchTeeTimes(
 	const browser = await launchBrowser();
 
 	try {
-		// Group courses by platform to avoid rate limits on the same domain
+		// Groups courses by platform to avoid rate limits on the same domain
 		const groups = new Map<Platform, typeof selectedCourses>();
 		for (const item of selectedCourses) {
 			if (!item) continue;
@@ -56,7 +56,7 @@ export async function fetchTeeTimes(
 			groups.set(item.platform, group);
 		}
 
-		// Run each platform group in parallel, but serialize within each group
+		// Runs each platform group in parallel, but serialize within each group
 		const groupResults = await Promise.allSettled(
 			[...groups.values()].map(async (group) => {
 				const results: (TeeTime[] | undefined)[] = [];
