@@ -1,7 +1,7 @@
 import "server-only";
 import type { TeeTime } from "@/app/types";
 import { cacheGet, cacheSet, reviveTeeTimes } from "@/app/cache";
-import { toMmDdYyyy } from "@/app/scrape/helpers";
+import { toMmDdYyyy, mergeDateWithTime } from "@/app/scrape/helpers";
 import { ParseError, ScrapeError } from "@/app/errors";
 import { captureError } from "@/app/lib/logger";
 import type { Browser } from "puppeteer";
@@ -116,7 +116,8 @@ async function scrapeGolfAtx(targetDate: string, browser: Browser) {
 						});
 					time = time.trim();
 
-					const date = new Date(`${day} ${time}`);
+					const [mm, dd, yyyy] = day.split("/");
+					const date = mergeDateWithTime(`${yyyy}-${mm}-${dd}`, time);
 
 					if (isNaN(date.getTime())) {
 						throw new ParseError(`Couldn't parse date/time: "${day} ${time}"`, {
