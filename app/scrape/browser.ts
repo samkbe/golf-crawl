@@ -20,7 +20,7 @@ export async function launchBrowser() {
 		}
 
 		const browser = await puppeteer.launch({
-			headless: false,
+			headless: true,
 			executablePath,
 			args,
 			defaultViewport: { width: 1366, height: 768 },

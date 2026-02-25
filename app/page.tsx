@@ -30,7 +30,8 @@ const courses = [
 	{ title: "Roy Kizer", key: "royKizer" },
 	{ title: "Jimmy Clay", key: "jimmyClay" },
 	{ title: "Riverside", key: "riverside" },
-	// { title: "Forest Creek", key: "forestCreek" },
+	{ title: "Colovista", key: "colovista" },
+	{ title: "Forest Creek", key: "forestCreek" },
 ];
 
 export default function Home() {
