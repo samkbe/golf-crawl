@@ -30,6 +30,7 @@ const courses = [
 	{ title: "Roy Kizer", key: "royKizer" },
 	{ title: "Jimmy Clay", key: "jimmyClay" },
 	{ title: "Riverside", key: "riverside" },
+	{ title: "Colovista", key: "colovista" },
 	{ title: "Forest Creek", key: "forestCreek" },
 ];
 
