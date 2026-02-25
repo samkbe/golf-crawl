@@ -10,6 +10,11 @@ const nextConfig = {
 		"puppeteer-extra-plugin-user-data-dir",
 		"fs-extra",
 		"@sparticuz/chromium",
+		"puppeteer-real-browser",
+		"rebrowser-puppeteer",
+		"rebrowser-puppeteer-core",
+		"xvfb",
+		"sleep",
 	],
 	outputFileTracingIncludes: {
 		"/": [
