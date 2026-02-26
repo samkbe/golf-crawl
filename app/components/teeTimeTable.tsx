@@ -40,6 +40,12 @@ const columns = [
 	}),
 	columnHelper.accessor("openSlots", {
 		header: "Open Slots",
+		filterFn: (row: Row<TeeTime>, columnId: string, filterValue: [number, number]) => {
+			if (!Array.isArray(filterValue) || filterValue.length !== 2) return true;
+			const raw = row.getValue(columnId);
+			const num = openSlotsToNumber(raw);
+			return num >= filterValue[0] && num <= filterValue[1];
+		},
 	}),
 	columnHelper.accessor("price", {
 		header: "Price",
@@ -89,9 +95,10 @@ export function TeeTimeTable({
 	const [sorting, setSorting] = useState<SortingState>([{ id: "date", desc: false }]);
 	const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
 	const [priceRange, setPriceRange] = useState<[number, number]>([0, 300]);
-	const TIME_MIN = 5 * 60;  // 5:00 AM
-	const TIME_MAX = 21 * 60; // 9:00 PM
+	const TIME_MIN = 5 * 60;
+	const TIME_MAX = 21 * 60;
 	const [timeRange, setTimeRange] = useState<[number, number]>([TIME_MIN, TIME_MAX]);
+	const [openSlotsRange, setOpenSlotsRange] = useState<[number, number]>([0, 4]);
 
 	useEffect(() => {
 		const unique = [...new Set(data.map((t) => t.courseName))];
@@ -122,6 +129,15 @@ export function TeeTimeTable({
 			const others = prev.filter((f) => f.id !== "date");
 			if (range[0] === TIME_MIN && range[1] === TIME_MAX) return others;
 			return [...others, { id: "date", value: range }];
+		});
+	}
+
+	function updateOpenSlotsFilter(range: [number, number]) {
+		setOpenSlotsRange(range);
+		setColumnFilters((prev) => {
+			const others = prev.filter((f) => f.id !== "openSlots");
+			if (range[0] === 0 && range[1] === 4) return others;
+			return [...others, { id: "openSlots", value: range }];
 		});
 	}
 
@@ -174,7 +190,7 @@ export function TeeTimeTable({
 					<div>
 						<h2 className="font-bold">Filters:</h2>
 						<div className="flex flex-col sm:flex-row gap-6 mt-2">
-							<div className="flex-1 min-w-0">
+							<div className="w-full sm:flex-1 sm:min-w-0 sm:basis-0">
 								<Label className="block mb-3">
 									Price: ${priceRange[0]} &ndash; ${priceRange[1]}
 								</Label>
@@ -188,7 +204,7 @@ export function TeeTimeTable({
 									}
 								/>
 							</div>
-							<div className="flex-1 min-w-0">
+							<div className="w-full sm:flex-1 sm:min-w-0 sm:basis-0">
 								<Label className="block mb-3">
 									Time: {minutesToLabel(timeRange[0])} &ndash; {minutesToLabel(timeRange[1])}
 								</Label>
@@ -199,6 +215,20 @@ export function TeeTimeTable({
 									value={timeRange}
 									onValueChange={(value) =>
 										updateTimeFilter(value as [number, number])
+									}
+								/>
+							</div>
+							<div className="w-full sm:flex-1 sm:min-w-0 sm:basis-0">
+								<Label className="block mb-3">
+									Open Slots: {openSlotsRange[0]} &ndash; {openSlotsRange[1]}
+								</Label>
+								<Slider
+									min={0}
+									max={4}
+									step={1}
+									value={openSlotsRange}
+									onValueChange={(value) =>
+										updateOpenSlotsFilter(value as [number, number])
 									}
 								/>
 							</div>
@@ -283,4 +313,13 @@ function dateToChicagoMinutes(date: Date): number {
 	const hour = Number(parts.find((p) => p.type === "hour")?.value ?? 0);
 	const minute = Number(parts.find((p) => p.type === "minute")?.value ?? 0);
 	return hour * 60 + minute;
+}
+
+function openSlotsToNumber(value: unknown): number {
+	if (value == null) return 0;
+	const s = String(value).trim();
+	const n = parseInt(s, 10);
+	if (!Number.isNaN(n)) return n;
+	const first = parseInt(s.replace(/[^0-9].*$/, ""), 10);
+	return Number.isNaN(first) ? 0 : first;
 }
