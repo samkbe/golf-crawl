@@ -12,6 +12,7 @@ import { golfAtxResults } from "@/app/scrape/courses/golf-atx";
 import type { Browser } from "puppeteer";
 import { scrapeStarRanch } from "./scrape/courses/star-ranch";
 import { scrapeDoubleJRanch } from "./scrape/courses/double-j-ranch";
+import { scrapeKissingTree } from "./scrape/courses/kissing-tree";
 import type { Platform } from "./types";
 
 type course = {
@@ -37,4 +38,5 @@ export const courses: course[] = [
 	{ title: "Morris Williams", key: "morrisWilliams", platform: "golfatx", fetchFunction: golfAtxResults },
 	{ title: "Star Ranch", key: "starRanch", platform: "ezlinks", fetchFunction: scrapeStarRanch },
 	{ title: "Double J Ranch", key: "doubleJRanch", platform: "clubprophet", fetchFunction: scrapeDoubleJRanch },
+	{ title: "Kissing Tree", key: "kissingTree", platform: "golfwithaccess", fetchFunction: scrapeKissingTree },
 ];

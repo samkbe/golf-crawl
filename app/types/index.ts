@@ -13,4 +13,4 @@ export interface TeeTime {
 	golfAtxKey?: string;
 }
 
-export type Platform = "teeitup" | "foreup" | "chronogolf" | "golfatx" | "ezlinks" | "clubprophet";
+export type Platform = "teeitup" | "foreup" | "chronogolf" | "golfatx" | "ezlinks" | "clubprophet" | "golfwithaccess";

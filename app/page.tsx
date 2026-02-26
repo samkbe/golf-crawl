@@ -33,6 +33,7 @@ const courses = [
 	{ title: "Colovista", key: "colovista" },
 	{ title: "Star Ranch", key: "starRanch" },
 	{ title: "Double J Ranch", key: "doubleJRanch" },
+	{ title: "Kissing Tree", key: "kissingTree" },
 	// { title: "Forest Creek", key: "forestCreek" },
 ];
 
