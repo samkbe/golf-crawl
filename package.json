@@ -35,7 +35,6 @@
 		"puppeteer-extra-plugin-stealth": "^2.11.2",
 		"puppeteer-extra-plugin-user-data-dir": "^2.4.1",
 		"puppeteer-extra-plugin-user-preferences": "^2.4.1",
-		"puppeteer-real-browser": "^1.4.4",
 		"react": "19.0.0",
 		"react-day-picker": "^9.13.2",
 		"react-dom": "19.0.0",
