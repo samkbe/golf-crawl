@@ -10,8 +10,10 @@ import { scrapeColovista } from "@/app/scrape/courses/colovista";
 import { scrapeForestCreek } from "@/app/scrape/courses/forest-creek";
 import { golfAtxResults } from "@/app/scrape/courses/golf-atx";
 import type { Browser } from "puppeteer";
-
-export type Platform = "teeitup" | "foreup" | "chronogolf" | "golfatx";
+import { scrapeStarRanch } from "./scrape/courses/star-ranch";
+import { scrapeDoubleJRanch } from "./scrape/courses/double-j-ranch";
+import { scrapeKissingTree } from "./scrape/courses/kissing-tree";
+import type { Platform } from "./types";
 
 type course = {
 	key: string;
@@ -34,4 +36,7 @@ export const courses: course[] = [
 	{ title: "Jimmy Clay", key: "jimmyClay", platform: "golfatx", fetchFunction: golfAtxResults },
 	{ title: "Roy Kizer", key: "royKizer", platform: "golfatx", fetchFunction: golfAtxResults },
 	{ title: "Morris Williams", key: "morrisWilliams", platform: "golfatx", fetchFunction: golfAtxResults },
+	{ title: "Star Ranch", key: "starRanch", platform: "ezlinks", fetchFunction: scrapeStarRanch },
+	{ title: "Double J Ranch", key: "doubleJRanch", platform: "clubprophet", fetchFunction: scrapeDoubleJRanch },
+	{ title: "Kissing Tree", key: "kissingTree", platform: "golfwithaccess", fetchFunction: scrapeKissingTree },
 ];

@@ -1,16 +1,16 @@
-type ScraperType = "foreup" | "teeitup" | "golfatx" | "chronogolf";
+import type { Platform } from "./types";
 
 export class ScrapeError extends Error {
 	public courseName: string;
 	public scrapeDate: string;
-	public scraperType: ScraperType;
+	public scraperType: Platform;
 
 	constructor(
 		message: string,
 		options: {
 			courseName: string;
 			scrapeDate: string;
-			scraperType: ScraperType;
+			scraperType: Platform;
 			cause?: unknown;
 		}
 	) {

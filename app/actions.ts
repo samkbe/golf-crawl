@@ -1,7 +1,6 @@
 "use server";
-import type { TeeTime, FetchTeeTimesState } from "@/app/types";
+import type { TeeTime, FetchTeeTimesState, Platform } from "@/app/types";
 import { courses } from "@/app/courses";
-import type { Platform } from "@/app/courses";
 import { captureError } from "@/app/lib/logger";
 import { launchBrowser } from "@/app/scrape/browser";
 
