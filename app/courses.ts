@@ -13,6 +13,8 @@ import { scrapeStarRanch } from "./scrape/courses/star-ranch";
 import { scrapeDoubleJRanch } from "./scrape/courses/double-j-ranch";
 import { scrapeKissingTree } from "./scrape/courses/kissing-tree";
 import { scrapeGreyRock } from "./scrape/courses/grey-rock";
+import { scrapeLostPines } from "./scrape/courses/lost-pines";
+import { scrapePlumCreek } from "./scrape/courses/plum-creek";
 import type { Platform } from "./types";
 import type { Browser } from "puppeteer";
 
@@ -41,4 +43,6 @@ export const courses: course[] = [
 	{ title: "Double J Ranch", key: "doubleJRanch", platform: "clubprophet", fetchFunction: scrapeDoubleJRanch },
 	{ title: "Kissing Tree", key: "kissingTree", platform: "golfwithaccess", fetchFunction: scrapeKissingTree },
 	{ title: "Grey Rock", key: "greyRock", platform: "ezlinks", fetchFunction: scrapeGreyRock },
+	{ title: "Lost Pines", key: "lostPines", platform: "ezlinks", fetchFunction: scrapeLostPines },
+	{ title: "Plum Creek", key: "plumCreek", platform: "clubprophet", fetchFunction: scrapePlumCreek },
 ];

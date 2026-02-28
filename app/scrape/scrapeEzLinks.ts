@@ -35,9 +35,6 @@ export default async function scrapeEzLinks(
 
 	const { teeTimes } = await response.json();
 
-
-	console.log("teeTimes", teeTimes);
-	
 	return (teeTimes as Array<{ date: string; courseName: string; openSlots: string; price: number; bookingLink: string }>).map(
 		(tt) => ({
 			date: new Date(tt.date),

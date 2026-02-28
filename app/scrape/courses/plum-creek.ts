@@ -4,13 +4,13 @@ import { ScrapeError } from "@/app/errors";
 import { cacheGet, cacheSet, reviveTeeTimes } from "@/app/cache";
 import type { TeeTime } from "@/app/types";
 
-const SITE_HOST = "https://doublejranch.cps.golf";
-const WEBSITE_ID = "0c68af11-ba27-4d32-c550-08daf8b161e6";
-const COURSE_IDS = "1";
-const BOOKING_LINK = "https://doublejranch.cps.golf/onlineresweb/search-teetime";
+const SITE_HOST = "https://foresightplumcreek.cps.golf";
+const WEBSITE_ID = "0ad3857d-1704-43be-9703-08da6f83475a";
+const COURSE_IDS = "25";
+const BOOKING_LINK = "https://foresightplumcreek.cps.golf/onlineresweb/search-teetime";
 
-export async function scrapeDoubleJRanch(date: string) {
-	const cacheKey = `${date}::doubleJRanch`;
+export async function scrapePlumCreek(date: string) {
+	const cacheKey = `${date}::plumCreek`;
 	const cached = await cacheGet<TeeTime[]>(cacheKey);
 	if (cached) return reviveTeeTimes(cached);
 
@@ -20,14 +20,14 @@ export async function scrapeDoubleJRanch(date: string) {
 			SITE_HOST,
 			WEBSITE_ID,
 			COURSE_IDS,
-			"Double J Ranch",
+			"Plum Creek",
 			BOOKING_LINK
 		);
 		await cacheSet(cacheKey, result);
 		return result;
 	} catch (error) {
-		const wrapped = new ScrapeError("Failed to scrape Double J Ranch", {
-			courseName: "Double J Ranch",
+		const wrapped = new ScrapeError("Failed to scrape Plum Creek", {
+			courseName: "Plum Creek",
 			scrapeDate: date,
 			scraperType: "clubprophet",
 			cause: error,
