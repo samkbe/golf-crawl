@@ -62,6 +62,7 @@ export default async function scrapeClubProphet(
 	date: string,
 	siteHost: string,
 	websiteId: string,
+	courseIds: string,
 	courseName: string,
 	bookingLink?: string
 ) {
@@ -113,7 +114,7 @@ export default async function scrapeClubProphet(
 		searchDate,
 		holes: "0",
 		numberOfPlayer: "0",
-		courseIds: "1",
+		courseIds,
 		searchTimeType: "0",
 		transactionId,
 		teeOffTimeMin: "0",

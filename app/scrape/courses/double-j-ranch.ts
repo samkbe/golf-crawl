@@ -6,6 +6,7 @@ import type { TeeTime } from "@/app/types";
 
 const SITE_HOST = "https://doublejranch.cps.golf";
 const WEBSITE_ID = "0c68af11-ba27-4d32-c550-08daf8b161e6";
+const COURSE_IDS = "1";
 const BOOKING_LINK = "https://doublejranch.cps.golf/onlineresweb/search-teetime";
 
 export async function scrapeDoubleJRanch(date: string) {
@@ -18,6 +19,7 @@ export async function scrapeDoubleJRanch(date: string) {
 			date,
 			SITE_HOST,
 			WEBSITE_ID,
+			COURSE_IDS,
 			"Double J Ranch",
 			BOOKING_LINK
 		);

@@ -6,6 +6,7 @@ import type { TeeTime } from "@/app/types";
 
 const SITE_HOST = "https://foresightplumcreek.cps.golf";
 const WEBSITE_ID = "0ad3857d-1704-43be-9703-08da6f83475a";
+const COURSE_IDS = "25";
 const BOOKING_LINK = "https://foresightplumcreek.cps.golf/onlineresweb/search-teetime";
 
 export async function scrapePlumCreek(date: string) {
@@ -18,6 +19,7 @@ export async function scrapePlumCreek(date: string) {
 			date,
 			SITE_HOST,
 			WEBSITE_ID,
+			COURSE_IDS,
 			"Plum Creek",
 			BOOKING_LINK
 		);
