@@ -38,6 +38,7 @@ const courses = [
 	{ title: "Kissing Tree", key: "kissingTree" },
 	{ title: "Forest Creek", key: "forestCreek" },
 	{ title: "Grey Rock", key: "greyRock" },
+	{ title: "Lost Pines", key: "lostPines" },
 ];
 
 export default function Home() {
