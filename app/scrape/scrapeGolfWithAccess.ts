@@ -1,8 +1,10 @@
 import "server-only";
 import { z } from "zod";
 import { fromZonedTime } from "date-fns-tz";
+import type { Dispatcher } from "undici";
 import type { TeeTime } from "@/app/types";
 import { ParseError } from "@/app/errors";
+import { getDecodoProxyDispatcher } from "@/app/scrape/proxy";
 
 const API_BASE = "https://golfwithaccess.com/api/v1/tee-times";
 const TZ = "America/Chicago";
@@ -60,7 +62,13 @@ export default async function scrapeGolfWithAccess(
 		utmMedium: "referral",
 	});
 
-	const res = await fetch(`${API_BASE}?${params}`);
+	const dispatcher = getDecodoProxyDispatcher();
+	const requestInit: RequestInit & { dispatcher?: Dispatcher } = {};
+	if (dispatcher) {
+		requestInit.dispatcher = dispatcher;
+	}
+
+	const res = await fetch(`${API_BASE}?${params}`, requestInit as RequestInit);
 
 	if (!res.ok) {
 		throw new ParseError(`GolfWithAccess API returned ${res.status}`, {
