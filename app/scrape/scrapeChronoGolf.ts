@@ -1,8 +1,10 @@
 import "server-only";
 import { z } from "zod";
 import { fromZonedTime } from "date-fns-tz";
+import type { Dispatcher } from "undici";
 import type { TeeTime } from "@/app/types";
 import { ParseError } from "@/app/errors";
+import { getDecodoProxyDispatcher } from "@/app/scrape/proxy";
 
 const API_BASE = "https://www.chronogolf.com/marketplace/clubs";
 const TZ = "America/Chicago";
@@ -35,7 +37,13 @@ export default async function scrapeChronoGolf(
 		nb_holes: "18",
 	});
 
-	const res = await fetch(`${API_BASE}/${clubId}/teetimes?${params}`);
+	const dispatcher = getDecodoProxyDispatcher();
+	const requestInit: RequestInit & { dispatcher?: Dispatcher } = {};
+	if (dispatcher) {
+		requestInit.dispatcher = dispatcher;
+	}
+
+	const res = await fetch(`${API_BASE}/${clubId}/teetimes?${params}`, requestInit as RequestInit);
 
 	if (!res.ok) {
 		throw new ParseError(`ChronoGolf API returned ${res.status}`, {
