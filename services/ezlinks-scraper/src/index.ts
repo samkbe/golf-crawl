@@ -8,6 +8,7 @@ const app = new Hono();
 const ScrapeRequestSchema = z.object({
 	date: z.string(),
 	facilityUrl: z.string().url(),
+	facilityId: z.number(),
 	courseName: z.string(),
 	bookingLink: z.string().url().optional(),
 });
@@ -30,10 +31,10 @@ app.post("/scrape", async (c) => {
 		return c.json({ error: "Invalid request", details: parsed.error.flatten() }, 400);
 	}
 
-	const { date, facilityUrl, courseName, bookingLink } = parsed.data;
+	const { date, facilityUrl, facilityId, courseName, bookingLink } = parsed.data;
 
 	try {
-		const teeTimes = await scrapeEzLinks(date, facilityUrl, courseName, bookingLink);
+		const teeTimes = await scrapeEzLinks(date, facilityUrl, facilityId, courseName, bookingLink);
 		return c.json({ teeTimes });
 	} catch (error) {
 		const message = error instanceof Error ? error.message : "Unknown error";

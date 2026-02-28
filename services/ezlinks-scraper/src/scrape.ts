@@ -23,6 +23,7 @@ export interface TeeTime {
 export async function scrapeEzLinks(
 	date: string,
 	facilityUrl: string,
+	facilityId: number,
 	courseName: string,
 	bookingLink?: string
 ): Promise<TeeTime[]> {
@@ -36,20 +37,16 @@ export async function scrapeEzLinks(
 	});
 
 	try {
-		const apiResponsePromise = new Promise<unknown>((resolve, reject) => {
+		const pageReadyPromise = new Promise<void>((resolve, reject) => {
 			const timeout = setTimeout(
-				() => reject(new Error(`Timed out waiting for EzLinks API response for ${courseName}`)),
+				() => reject(new Error(`Timed out waiting for EzLinks page to load for ${courseName}`)),
 				60_000
 			);
 
 			page.on("response", async (response: any) => {
 				if (response.url().includes("/api/search/search")) {
 					clearTimeout(timeout);
-					try {
-						resolve(await response.json());
-					} catch (e) {
-						reject(e);
-					}
+					resolve();
 				}
 			});
 		});
@@ -59,7 +56,35 @@ export async function scrapeEzLinks(
 			timeout: 60_000,
 		});
 
-		const json = await apiResponsePromise;
+		await pageReadyPromise;
+
+		const [year, month, day] = date.split("-");
+		const formattedDate = `${month}/${day}/${year}`;
+
+		const searchUrl = `${facilityUrl.replace(/\/$/, "")}/api/search/search`;
+		const payload = {
+			p01: [facilityId],
+			p02: formattedDate,
+			p03: "6:30 AM",
+			p04: "6:00 PM",
+			p05: 0,
+			p06: 4,
+			p07: false,
+		};
+
+		const json = await page.evaluate(
+			async (url: string, body: Record<string, unknown>) => {
+				const res = await fetch(url, {
+					method: "POST",
+					headers: { "Content-Type": "application/json" },
+					body: JSON.stringify(body),
+				});
+				return res.json();
+			},
+			searchUrl,
+			payload
+		);
+
 		const result = EzLinksResponseSchema.safeParse(json);
 
 		if (!result.success) {
