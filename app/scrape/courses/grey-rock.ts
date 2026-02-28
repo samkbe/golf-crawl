@@ -4,11 +4,11 @@ import { ScrapeError } from "@/app/errors";
 import { cacheGet, cacheSet, reviveTeeTimes } from "@/app/cache";
 import type { TeeTime } from "@/app/types";
 
-const FACILITY_URL = "https://starranchgolf.ezlinksgolf.com";
-const FACILITY_ID = 1682;
+const FACILITY_URL = "https://greyrockpp.ezlinksgolf.com/";
+const FACILITY_ID = 5193;
 
-export async function scrapeStarRanch(date: string) {
-    const cacheKey = `${date}::starRanch`;
+export async function scrapeGreyRock(date: string) {
+    const cacheKey = `${date}::greyRock`;
     const cached = await cacheGet<TeeTime[]>(cacheKey);
     if (cached) return reviveTeeTimes(cached);
 
@@ -17,14 +17,14 @@ export async function scrapeStarRanch(date: string) {
             date,
             FACILITY_URL,
             FACILITY_ID,
-            "Star Ranch",
+            "Grey Rock",
             `${FACILITY_URL}/index.html#/search`
         );
         await cacheSet(cacheKey, result);
         return result;
     } catch (error) {
-        const wrapped = new ScrapeError("Failed to scrape Star Ranch", {
-            courseName: "Star Ranch",
+        const wrapped = new ScrapeError("Failed to scrape Grey Rock", {
+            courseName: "Grey Rock",
             scrapeDate: date,
             scraperType: "ezlinks",
             cause: error,

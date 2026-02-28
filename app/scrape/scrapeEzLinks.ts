@@ -8,6 +8,7 @@ const EZLINKS_SERVICE_API_KEY = process.env.EZLINKS_SERVICE_API_KEY;
 export default async function scrapeEzLinks(
 	date: string,
 	facilityUrl: string,
+	facilityId: number,
 	courseName: string,
 	bookingLink?: string
 ): Promise<TeeTime[]> {
@@ -21,7 +22,7 @@ export default async function scrapeEzLinks(
 			"Content-Type": "application/json",
 			Authorization: `Bearer ${EZLINKS_SERVICE_API_KEY}`,
 		},
-		body: JSON.stringify({ date, facilityUrl, courseName, bookingLink }),
+		body: JSON.stringify({ date, facilityUrl, facilityId, courseName, bookingLink }),
 	});
 
 	if (!response.ok) {
@@ -34,6 +35,9 @@ export default async function scrapeEzLinks(
 
 	const { teeTimes } = await response.json();
 
+
+	console.log("teeTimes", teeTimes);
+	
 	return (teeTimes as Array<{ date: string; courseName: string; openSlots: string; price: number; bookingLink: string }>).map(
 		(tt) => ({
 			date: new Date(tt.date),
