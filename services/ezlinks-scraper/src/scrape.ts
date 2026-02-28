@@ -37,11 +37,19 @@ export async function scrapeEzLinks(
 	});
 
 	try {
+		let capturedHeaders: Record<string, string> = {};
+
 		const pageReadyPromise = new Promise<void>((resolve, reject) => {
 			const timeout = setTimeout(
 				() => reject(new Error(`Timed out waiting for EzLinks page to load for ${courseName}`)),
 				60_000
 			);
+
+			page.on("request", (request: any) => {
+				if (request.url().includes("/api/search/search") && request.method() === "POST") {
+					capturedHeaders = request.headers();
+				}
+			});
 
 			page.on("response", async (response: any) => {
 				if (response.url().includes("/api/search/search")) {
@@ -72,17 +80,22 @@ export async function scrapeEzLinks(
 			p07: false,
 		};
 
+		const replayHeaders: Record<string, string> = { ...capturedHeaders, "content-type": "application/json" };
+		delete replayHeaders["content-length"];
+
 		const json = await page.evaluate(
-			async (url: string, body: Record<string, unknown>) => {
+			async (url: string, body: Record<string, unknown>, headers: Record<string, string>) => {
 				const res = await fetch(url, {
 					method: "POST",
-					headers: { "Content-Type": "application/json" },
+					headers,
 					body: JSON.stringify(body),
+					credentials: "same-origin",
 				});
 				return res.json();
 			},
 			searchUrl,
-			payload
+			payload,
+			replayHeaders
 		);
 
 		const result = EzLinksResponseSchema.safeParse(json);
