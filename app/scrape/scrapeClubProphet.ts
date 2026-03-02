@@ -165,7 +165,9 @@ export default async function scrapeClubProphet(
 		teeTimes.push({
 			date: teeTimeDate,
 			courseName,
-			openSlots: `${entry.minPlayer}-${entry.maxPlayer}`,
+			openSlots: entry.minPlayer === entry.maxPlayer
+			? String(entry.minPlayer)
+			: `${entry.minPlayer}-${entry.maxPlayer}`,
 			price,
 			bookingLink,
 		});
