@@ -5,6 +5,7 @@ const TZ = "America/Chicago";
 
 const EzLinksSlotSchema = z.object({
 	r08: z.number(),
+	r11: z.number(),
 	r15: z.string(),
 });
 
@@ -104,16 +105,26 @@ export async function scrapeEzLinks(
 			throw new Error(`EzLinks API response shape changed for ${courseName}: ${result.error.message}`);
 		}
 
-		const teeTimes: TeeTime[] = [];
-
+		const grouped = new Map<string, { minPrice: number; openSlots: number }>();
 		for (const entry of result.data.r06) {
-			const teeTimeDate = fromZonedTime(entry.r15, TZ);
+			const existing = grouped.get(entry.r15);
+			if (existing) {
+				existing.minPrice = Math.min(existing.minPrice, entry.r08);
+				existing.openSlots = Math.max(existing.openSlots, entry.r11);
+			} else {
+				grouped.set(entry.r15, { minPrice: entry.r08, openSlots: entry.r11 });
+			}
+		}
+
+		const resolvedBookingLink = bookingLink ?? `${facilityUrl}/index.html#/search`;
+		const teeTimes: TeeTime[] = [];
+		for (const [timeKey, { minPrice, openSlots }] of grouped) {
 			teeTimes.push({
-				date: teeTimeDate.toISOString(),
+				date: fromZonedTime(timeKey, TZ).toISOString(),
 				courseName,
-				openSlots: "2-4",
-				price: entry.r08,
-				bookingLink: bookingLink ?? `${facilityUrl}/index.html#/search`,
+				openSlots: String(openSlots),
+				price: minPrice,
+				bookingLink: resolvedBookingLink,
 			});
 		}
 

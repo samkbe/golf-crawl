@@ -7,6 +7,7 @@ const API_BASE = "https://phx-api-be-east-1b.kenna.io/v2/tee-times";
 
 const RateSchema = z.object({
 	greenFeeCart: z.number().optional(),
+	greenFeeWalking: z.number().optional(),
 	allowedPlayers: z.array(z.number()),
 });
 
@@ -23,11 +24,7 @@ const TeeItUpResponseSchema = z.array(
 	})
 );
 
-export default async function scrapeTeeItUp(
-	date: string,
-	url: string,
-	courseName: string
-) {
+export default async function scrapeTeeItUp(date: string, url: string, courseName: string) {
 	const parsed = new URL(url);
 	const alias = parsed.hostname.split(".")[0];
 	const facilityId = parsed.searchParams.get("course");
@@ -73,7 +70,10 @@ export default async function scrapeTeeItUp(
 		for (const entry of group.teetimes) {
 			const maxAllowed = Math.max(...entry.rates.flatMap((r) => r.allowedPlayers));
 			if (maxAllowed <= 0) continue;
-			const greenFee = entry.rates.find((r) => r.greenFeeCart != null)?.greenFeeCart;
+			const rateWithCart = entry.rates.find((r) => r.greenFeeCart != null);
+			const greenFee =
+				rateWithCart?.greenFeeCart ??
+				entry.rates.find((r) => r.greenFeeWalking != null)?.greenFeeWalking;
 			const price = greenFee != null ? greenFee / 100 : undefined;
 
 			teeTimes.push({
