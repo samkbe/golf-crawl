@@ -1,8 +1,10 @@
 "use client";
+import Image from "next/image";
 import { fetchTeeTimes } from "@/app/actions";
 import { useActionState, useEffect } from "react";
 import { useState } from "react";
 import { TeeTimeTable } from "@/app/components/teeTimeTable";
+import logo from "@/app/logo.png";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -31,7 +33,13 @@ const courses = [
 	{ title: "Jimmy Clay", key: "jimmyClay" },
 	{ title: "Riverside", key: "riverside" },
 	{ title: "Colovista", key: "colovista" },
-	// { title: "Forest Creek", key: "forestCreek" },
+	{ title: "Star Ranch", key: "starRanch" },
+	{ title: "Double J Ranch", key: "doubleJRanch" },
+	{ title: "Kissing Tree", key: "kissingTree" },
+	{ title: "Forest Creek", key: "forestCreek" },
+	{ title: "Grey Rock", key: "greyRock" },
+	{ title: "Lost Pines", key: "lostPines" },
+	{ title: "Plum Creek", key: "plumCreek" },
 ];
 
 export default function Home() {
@@ -71,7 +79,14 @@ export default function Home() {
 
 	return (
 		<div className="min-h-screen p-2 md:p-4 max-w-7xl mx-auto">
-			<h1 className="text-4xl font-bold text-center mt-4 mb-4">ATX Tee Times</h1>
+			<div className="flex justify-center md:justify-start mt-4 mb-4">
+				<Image
+					src={logo}
+					alt="ATX Tee Times"
+					className="h-12 md:h-20 w-auto object-contain"
+					priority
+				/>
+			</div>
 			<div className="flex flex-col md:flex-row md:gap-4 md:items-start">
 				<form
 					action={formAction}

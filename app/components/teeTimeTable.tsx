@@ -98,7 +98,7 @@ export function TeeTimeTable({
 	const TIME_MIN = 5 * 60;
 	const TIME_MAX = 21 * 60;
 	const [timeRange, setTimeRange] = useState<[number, number]>([TIME_MIN, TIME_MAX]);
-	const [openSlotsRange, setOpenSlotsRange] = useState<[number, number]>([0, 4]);
+	const [openSlotsRange, setOpenSlotsRange] = useState<[number, number]>([1, 4]);
 
 	useEffect(() => {
 		const unique = [...new Set(data.map((t) => t.courseName))];
@@ -136,7 +136,7 @@ export function TeeTimeTable({
 		setOpenSlotsRange(range);
 		setColumnFilters((prev) => {
 			const others = prev.filter((f) => f.id !== "openSlots");
-			if (range[0] === 0 && range[1] === 4) return others;
+			if (range[0] === 1 && range[1] === 4) return others;
 			return [...others, { id: "openSlots", value: range }];
 		});
 	}
@@ -223,7 +223,7 @@ export function TeeTimeTable({
 									Open Slots: {openSlotsRange[0]} &ndash; {openSlotsRange[1]}
 								</Label>
 								<Slider
-									min={0}
+									min={1}
 									max={4}
 									step={1}
 									value={openSlotsRange}
