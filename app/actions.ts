@@ -18,29 +18,17 @@ export async function fetchTeeTimes(
 
 	if (isNaN(date.getTime())) return { ...prevState, error: "Invalid date format" };
 
-	const allSelected = formData.get("all") === "on";
-
-	let selectedCourses;
-
-	if (allSelected) {
-		selectedCourses = courses.map(({ fetchFunction, key, platform }) => ({
-			fetchFunction,
-			key,
-			platform,
-		}));
-	} else {
-		selectedCourses = [...formData.getAll("courses")]
-			.map((val) => {
-				const fn = courses.find((course) => course.key === val);
-				if (fn)
-					return {
-						fetchFunction: fn.fetchFunction,
-						key: fn.key,
-						platform: fn.platform,
-					};
-			})
-			.filter(Boolean);
-	}
+	const selectedCourses = [...formData.getAll("courses")]
+		.map((val) => {
+			const fn = courses.find((course) => course.key === val);
+			if (fn)
+				return {
+					fetchFunction: fn.fetchFunction,
+					key: fn.key,
+					platform: fn.platform,
+				};
+		})
+		.filter(Boolean);
 
 	const failedCourses: string[] = [];
 	const browser = await launchBrowser();
