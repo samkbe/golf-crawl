@@ -50,13 +50,12 @@ export default function Home() {
 	});
 
 	const [date, setDate] = useState<Date>();
-	const [allSelected, setAllSelected] = useState(false);
 	const [hasSubmitted, setHasSubmitted] = useState(false);
 	const [selectedCourseNames, setSelectedCourseNames] = useState<string[]>([]);
 	const [openSteps, setOpenSteps] = useState<string[]>(["date", "courses"]);
 	const [checkedKeys, setCheckedKeys] = useState<Set<string>>(new Set());
 
-	const selectedCount = allSelected ? courses.length : checkedKeys.size;
+	const selectedCount = checkedKeys.size;
 
 	useEffect(() => {
 		if (state.error) {
@@ -93,14 +92,10 @@ export default function Home() {
 					onSubmit={(e) => {
 						setHasSubmitted(true);
 						const formData = new FormData(e.currentTarget);
-						if (formData.get("all") === "on") {
-							setSelectedCourseNames(courses.map((c) => c.title));
-						} else {
-							const selectedKeys = formData.getAll("courses") as string[];
-							setSelectedCourseNames(
-								courses.filter((c) => selectedKeys.includes(c.key)).map((c) => c.title)
-							);
-						}
+						const selectedKeys = formData.getAll("courses") as string[];
+						setSelectedCourseNames(
+							courses.filter((c) => selectedKeys.includes(c.key)).map((c) => c.title)
+						);
 					}}
 					className="w-full md:w-1/4 md:min-w-[280px] shrink-0 rounded-lg p-4 bg-white/50 backdrop-blur-md text-md"
 				>
@@ -154,7 +149,7 @@ export default function Home() {
 								</div>
 							</AccordionTrigger>
 							<AccordionContent>
-								<div className={`flex flex-wrap gap-y-3 pt-2 ${allSelected ? "opacity-25" : ""}`}>
+								<div className="flex flex-wrap gap-y-3 pt-2">
 									{courses.map(({ title, key }) => (
 										<div
 											className="basis-1/2 flex items-center gap-2"
@@ -164,8 +159,7 @@ export default function Home() {
 												id={key}
 												value={key}
 												name="courses"
-												disabled={allSelected}
-												checked={allSelected || checkedKeys.has(key)}
+												checked={checkedKeys.has(key)}
 												onCheckedChange={(checked) =>
 													handleCheckChange(key, checked === true)
 												}
@@ -177,17 +171,16 @@ export default function Home() {
 										</div>
 									))}
 								</div>
-								<div className="mt-4 flex items-center justify-center gap-2">
-								<Checkbox
-									id="all"
-									name="all"
-									checked={allSelected}
-									className="h-6 w-6 md:h-4 md:w-4"
-									onCheckedChange={(checked) => setAllSelected(checked === true)}
-								/>
-									<Label htmlFor="all" className="text-md cursor-pointer">
-										All Courses
-									</Label>
+								<div className="mt-4 flex justify-center">
+									<button
+										type="button"
+										onClick={() => setCheckedKeys((prev) =>
+											prev.size === courses.length ? new Set() : new Set(courses.map((c) => c.key))
+										)}
+										className="text-xs px-3 py-1 rounded border font-medium hover:bg-gray-100"
+									>
+										Select All
+									</button>
 								</div>
 							</AccordionContent>
 						</AccordionItem>
