@@ -52,7 +52,7 @@ export default function Home() {
 	const [date, setDate] = useState<Date>();
 	const [hasSubmitted, setHasSubmitted] = useState(false);
 	const [selectedCourseNames, setSelectedCourseNames] = useState<string[]>([]);
-	const [openSteps, setOpenSteps] = useState<string[]>(["date", "courses"]);
+	const [openSteps, setOpenSteps] = useState<string[]>(["date"]);
 	const [checkedKeys, setCheckedKeys] = useState<Set<string>>(new Set());
 
 	const selectedCount = checkedKeys.size;
@@ -77,7 +77,7 @@ export default function Home() {
 	}
 
 	return (
-		<div className="min-h-screen p-2 md:p-4 max-w-7xl mx-auto">
+		<div className="min-h-screen flex flex-col p-2 md:p-4 max-w-7xl mx-auto">
 			<div className="flex justify-center md:justify-start mt-4 mb-4">
 				<Image
 					src={logo}
@@ -209,6 +209,24 @@ export default function Home() {
 					)}
 				</div>
 			</div>
+			<footer className="mt-auto pt-8 mb-4 text-center text-sm text-muted-foreground space-y-1">
+				<p>
+					Built by Sam B &middot;{" "}
+					<a href="mailto:atxteetimessupport@gmail.com" className="underline hover:text-foreground">
+						atxteetimessupport@gmail.com
+					</a>
+				</p>
+				<p>
+					<a
+						href="https://buymeacoffee.com/samkbe"
+						target="_blank"
+						rel="noopener noreferrer"
+						className="inline-flex items-center gap-1 underline hover:text-foreground"
+					>
+						☕ Buy Me a Coffee
+					</a>
+				</p>
+			</footer>
 		</div>
 	);
 }
