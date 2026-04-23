@@ -1,5 +1,8 @@
 import { z } from "zod";
 import { fromZonedTime } from "date-fns-tz";
+// #region agent log
+import { dbg } from "./debug.js";
+// #endregion
 
 const TZ = "America/Chicago";
 const PLAYER_COUNTS = [2, 1] as const;
@@ -36,12 +39,35 @@ export async function scrapeEzLinks(
 ): Promise<TeeTime[]> {
 	const { connect } = await import("puppeteer-real-browser");
 
-	const { browser, page } = await connect({
-		headless: false,
-		args: ["--no-sandbox", "--disable-setuid-sandbox"],
-		turnstile: true,
-		connectOption: {},
-	});
+	// #region agent log
+	dbg("scrape.ts:beforeConnect", "about to call puppeteer-real-browser connect()", { courseName }, "H1,H2,H5");
+	const connectStart = Date.now();
+	// #endregion
+
+	let browser: any, page: any;
+	try {
+		({ browser, page } = await connect({
+			headless: false,
+			args: ["--no-sandbox", "--disable-setuid-sandbox"],
+			turnstile: true,
+			connectOption: {},
+		}));
+	} catch (err) {
+		// #region agent log
+		dbg("scrape.ts:connectError", "connect() threw", {
+			courseName,
+			durationMs: Date.now() - connectStart,
+			errorMessage: err instanceof Error ? err.message : String(err),
+			errorName: err instanceof Error ? err.name : undefined,
+			errorStack: err instanceof Error ? err.stack : undefined,
+			errorCode: (err as NodeJS.ErrnoException)?.code,
+		}, "H1,H2,H5");
+		// #endregion
+		throw err;
+	}
+	// #region agent log
+	dbg("scrape.ts:afterConnect", "connect() returned", { courseName, durationMs: Date.now() - connectStart });
+	// #endregion
 
 	try {
 		let capturedHeaders: Record<string, string> = {};
@@ -147,6 +173,27 @@ export async function scrapeEzLinks(
 
 		return teeTimes;
 	} finally {
-		await browser.close();
+		// #region agent log
+		dbg("scrape.ts:beforeClose", "about to call browser.close()", { courseName }, "H1,H4");
+		const closeStart = Date.now();
+		// #endregion
+		try {
+			await browser.close();
+			// #region agent log
+			dbg("scrape.ts:afterClose", "browser.close() resolved", { courseName, durationMs: Date.now() - closeStart });
+			// Wait briefly to let the async disconnected handler run xvfb/chrome cleanup, then snapshot
+			await new Promise((r) => setTimeout(r, 1500));
+			dbg("scrape.ts:afterCloseSettle", "post-close settle snapshot", { courseName }, "H1,H4");
+			// #endregion
+		} catch (closeErr) {
+			// #region agent log
+			dbg("scrape.ts:closeError", "browser.close() threw", {
+				courseName,
+				durationMs: Date.now() - closeStart,
+				errorMessage: closeErr instanceof Error ? closeErr.message : String(closeErr),
+				errorStack: closeErr instanceof Error ? closeErr.stack : undefined,
+			}, "H1,H4");
+			// #endregion
+		}
 	}
 }
