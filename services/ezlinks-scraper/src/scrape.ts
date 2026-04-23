@@ -1,42 +1,8 @@
 import { z } from "zod";
 import { fromZonedTime } from "date-fns-tz";
-import { execSync } from "node:child_process";
 // #region agent log
-import { dbg } from "./debug.js";
+import { dbg, getChromiumPids, getProcessStates } from "./debug.js";
 // #endregion
-
-function getChromiumPids(): Set<number> {
-	try {
-		const out = execSync("pgrep -x chromium || true", { stdio: ["ignore", "pipe", "ignore"] }).toString();
-		return new Set(
-			out
-				.split("\n")
-				.map((s) => s.trim())
-				.filter(Boolean)
-				.map((s) => parseInt(s, 10))
-				.filter((n) => Number.isFinite(n))
-		);
-	} catch {
-		return new Set();
-	}
-}
-
-function killLeakedChromiumPids(before: Set<number>): { killed: number[]; errors: string[] } {
-	const after = getChromiumPids();
-	const leaked: number[] = [];
-	for (const pid of after) if (!before.has(pid)) leaked.push(pid);
-	const killed: number[] = [];
-	const errors: string[] = [];
-	for (const pid of leaked) {
-		try {
-			process.kill(pid, "SIGKILL");
-			killed.push(pid);
-		} catch (e) {
-			errors.push(`${pid}: ${(e as Error).message}`);
-		}
-	}
-	return { killed, errors };
-}
 
 const TZ = "America/Chicago";
 const PLAYER_COUNTS = [2, 1] as const;
@@ -217,22 +183,27 @@ export async function scrapeEzLinks(
 			await browser.close();
 			// #region agent log
 			dbg("scrape.ts:afterClose", "browser.close() resolved", { courseName, durationMs: Date.now() - closeStart });
-			// Wait briefly to let the async disconnected handler run xvfb/chrome cleanup, then snapshot
 			await new Promise((r) => setTimeout(r, 1500));
-			dbg("scrape.ts:afterCloseSettle", "post-close settle snapshot", { courseName }, "H1,H4");
-			// #endregion
-
-			const reap = killLeakedChromiumPids(preScrapeChromiumPids);
-			// #region agent log
-			dbg("scrape.ts:afterReap", "reaped leaked chromium pids (post-fix)", {
-				courseName,
-				killedCount: reap.killed.length,
-				killedPids: reap.killed,
-				killErrors: reap.errors,
-			}, "H1");
-			// Let the kernel reap the killed processes, then snapshot again
-			await new Promise((r) => setTimeout(r, 500));
-			dbg("scrape.ts:afterReapSettle", "post-reap settle snapshot (post-fix)", { courseName }, "H1");
+			// Diff current chromium pids vs pre-scrape; inspect /proc/<pid>/stat state for each new pid
+			const postScrapeChromiumPids = getChromiumPids();
+			const leakedPids = [...postScrapeChromiumPids].filter((p) => !preScrapeChromiumPids.has(p));
+			const leakedStates = getProcessStates(leakedPids);
+			const zombieCount = Object.values(leakedStates).filter((s) => s === "Z").length;
+			const aliveCount = Object.values(leakedStates).filter((s) => s === "R" || s === "S" || s === "D").length;
+			dbg(
+				"scrape.ts:afterCloseSettle",
+				"post-close settle snapshot with process-state check",
+				{
+					courseName,
+					preScrapeChromiumPidCount: preScrapeChromiumPids.size,
+					postScrapeChromiumPidCount: postScrapeChromiumPids.size,
+					leakedPidCount: leakedPids.length,
+					leakedStates,
+					zombieCount,
+					aliveCount,
+				},
+				"H6"
+			);
 			// #endregion
 		} catch (closeErr) {
 			// #region agent log
