@@ -42,7 +42,42 @@ function snapshotProcess() {
 		try { pidsCurrent = fs.readFileSync("/sys/fs/cgroup/pids.current", "utf8").trim(); } catch {}
 		try { pidsMax = fs.readFileSync("/sys/fs/cgroup/pids.max", "utf8").trim(); } catch {}
 
-		return { memMB, pidCount, chromePidCount, xvfbPidCount, meminfo, cgroupLimit, cgroupCurrent, pidsCurrent, pidsMax };
+		let pid1Comm: string | null = null;
+		let pid1Exe: string | null = null;
+		let pid1Cmdline: string | null = null;
+		let defunctCount: number | null = null;
+		try { pid1Comm = fs.readFileSync("/proc/1/comm", "utf8").trim(); } catch {}
+		try { pid1Exe = fs.readlinkSync("/proc/1/exe"); } catch {}
+		try { pid1Cmdline = fs.readFileSync("/proc/1/cmdline", "utf8").replace(/\0/g, " ").trim(); } catch {}
+		try {
+			let zombies = 0;
+			for (const name of fs.readdirSync("/proc")) {
+				if (!/^\d+$/.test(name)) continue;
+				try {
+					const stat = fs.readFileSync(`/proc/${name}/stat`, "utf8");
+					const m = stat.match(/\) (\S)/);
+					if (m && m[1] === "Z") zombies += 1;
+				} catch {}
+			}
+			defunctCount = zombies;
+		} catch {}
+
+		return {
+			memMB,
+			pidCount,
+			chromePidCount,
+			xvfbPidCount,
+			meminfo,
+			cgroupLimit,
+			cgroupCurrent,
+			pidsCurrent,
+			pidsMax,
+			pid1Comm,
+			pid1Exe,
+			pid1Cmdline,
+			defunctCount,
+			nodePid: process.pid,
+		};
 	} catch (e) {
 		return { snapshotError: String(e) };
 	}
