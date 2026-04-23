@@ -4,6 +4,7 @@ RUN apt-get update && apt-get install -y \
     chromium \
     xvfb \
     dbus \
+    tini \
     fonts-liberation \
     libatk-bridge2.0-0 \
     libatk1.0-0 \
@@ -38,4 +39,4 @@ RUN chmod +x entrypoint.sh
 
 EXPOSE 3001
 
-ENTRYPOINT ["./entrypoint.sh"]
+ENTRYPOINT ["/usr/bin/tini", "--", "./entrypoint.sh"]
