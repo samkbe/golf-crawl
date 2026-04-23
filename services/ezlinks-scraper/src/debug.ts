@@ -71,4 +71,29 @@ let inflight = 0;
 export function incInflight() { inflight += 1; return inflight; }
 export function decInflight() { inflight = Math.max(0, inflight - 1); return inflight; }
 export function getInflight() { return inflight; }
+
+export function getChromiumPids(): Set<number> {
+	try {
+		const out = execSync("pgrep -x chromium || true", { stdio: ["ignore", "pipe", "ignore"] }).toString();
+		return new Set(
+			out.split("\n").map((s) => s.trim()).filter(Boolean).map((s) => parseInt(s, 10)).filter((n) => Number.isFinite(n))
+		);
+	} catch {
+		return new Set();
+	}
+}
+
+export function getProcessStates(pids: number[]): Record<string, string> {
+	const result: Record<string, string> = {};
+	for (const pid of pids) {
+		try {
+			const stat = fs.readFileSync(`/proc/${pid}/stat`, "utf8");
+			const match = stat.match(/\) (\S)/);
+			result[String(pid)] = match ? match[1] : "?";
+		} catch {
+			result[String(pid)] = "missing";
+		}
+	}
+	return result;
+}
 // #endregion
