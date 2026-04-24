@@ -147,6 +147,10 @@ export async function scrapeEzLinks(
 
 		return teeTimes;
 	} finally {
-		await browser.close();
+		try {
+			await browser.close();
+		} catch {
+			// ignore close errors; tini will reap any stragglers
+		}
 	}
 }
