@@ -3,13 +3,14 @@ import { captureError } from "@/app/lib/logger";
 import { ScrapeError } from "@/app/errors";
 import { cacheGet, cacheSet, reviveTeeTimes } from "@/app/cache";
 import type { TeeTime } from "@/app/types";
+import type { Browser } from "puppeteer";
 
 const SITE_HOST = "https://doublejranch.cps.golf";
 const WEBSITE_ID = "0c68af11-ba27-4d32-c550-08daf8b161e6";
 const COURSE_IDS = "1";
 const BOOKING_LINK = "https://doublejranch.cps.golf/onlineresweb/search-teetime";
 
-export async function scrapeDoubleJRanch(date: string) {
+export async function scrapeDoubleJRanch(date: string, browser: Browser) {
 	const cacheKey = `${date}::doubleJRanch`;
 	const cached = await cacheGet<TeeTime[]>(cacheKey);
 	if (cached) return reviveTeeTimes(cached);
@@ -21,7 +22,8 @@ export async function scrapeDoubleJRanch(date: string) {
 			WEBSITE_ID,
 			COURSE_IDS,
 			"Double J Ranch",
-			BOOKING_LINK
+			BOOKING_LINK,
+			browser
 		);
 		await cacheSet(cacheKey, result);
 		return result;
