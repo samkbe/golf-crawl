@@ -3,9 +3,11 @@ import { z } from "zod";
 import { fromZonedTime } from "date-fns-tz";
 import type { TeeTime } from "@/app/types";
 import { ParseError } from "@/app/errors";
+import type { Browser } from "puppeteer";
 
 const TZ = "America/Chicago";
 const TOKEN_CLIENT_ID = "onlinereswebshortlived";
+const PAGE_READY_TIMEOUT_MS = 45_000;
 const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
@@ -61,14 +63,34 @@ function makeHeaders(token: string, websiteId: string): Record<string, string> {
 	};
 }
 
+type BrowserFetchResult =
+	| {
+			ok: true;
+			json: unknown;
+	  }
+	| {
+			ok: false;
+			field: "transactionId" | "apiResponse";
+			status: number;
+			bodyPreview: string;
+	  };
+
 export default async function scrapeClubProphet(
 	date: string,
 	siteHost: string,
 	websiteId: string,
 	courseIds: string,
 	courseName: string,
-	bookingLink?: string
+	bookingLink?: string,
+	browser?: Browser
 ) {
+	if (!browser) {
+		throw new ParseError("Club Prophet scraper requires a browser context", {
+			courseName,
+			field: "browser",
+		});
+	}
+
 	const tokenRes = await fetch(`${siteHost}/identityapi/myconnect/token/short`, {
 		method: "POST",
 		body: new URLSearchParams({ client_id: TOKEN_CLIENT_ID }),
@@ -96,57 +118,137 @@ export default async function scrapeClubProphet(
 	const token = tokenResult.data.access_token;
 	const headers = makeHeaders(token, websiteId);
 	const transactionId = crypto.randomUUID();
-
-	console.log("Token:", token);
-	
-	const registerRes = await fetch(
-		`${siteHost}/onlineres/onlineapi/api/v1/onlinereservation/RegisterTransactionId`,
-		{
-			method: "POST",
-			headers,
-			body: JSON.stringify({ transactionId }),
-		}
-	);
-
-	if (!registerRes.ok) {
-		throw new ParseError(`Club Prophet register transaction returned ${registerRes.status}`, {
-			courseName,
-			field: "transactionId",
-		});
-	}
-
+	const resolvedBookingLink = bookingLink ?? `${siteHost}/onlineresweb/search-teetime`;
 	const searchDate = toClubProphetDate(date);
-	const params = new URLSearchParams({
-		searchDate,
-		holes: "0",
-		numberOfPlayer: "0",
-		courseIds,
-		searchTimeType: "0",
-		transactionId,
-		teeOffTimeMin: "0",
-		teeOffTimeMax: "23",
-		isChangeTeeOffTime: "true",
-		teeSheetSearchView: "5",
-		classCode: "R",
-		defaultOnlineRate: "N",
-		isUseCapacityPricing: "false",
-		memberStoreId: "1",
-		searchType: "1",
-	});
+	const page = await browser.newPage();
+	let browserResult: BrowserFetchResult;
 
-	const teeTimesRes = await fetch(
-		`${siteHost}/onlineres/onlineapi/api/v1/onlinereservation/TeeTimes?${params}`,
-		{ headers }
-	);
+	try {
+		await page.goto(resolvedBookingLink, {
+			waitUntil: "domcontentloaded",
+			timeout: PAGE_READY_TIMEOUT_MS,
+		});
 
-	if (!teeTimesRes.ok) {
-		throw new ParseError(`Club Prophet TeeTimes API returned ${teeTimesRes.status}`, {
+		// Give any bot-check script a moment to finalize cookies before replaying API requests.
+		await new Promise((r) => setTimeout(r, 2000));
+
+		browserResult = await page.evaluate(
+			async ({
+				siteHost,
+				headers,
+				transactionId,
+				searchDate,
+				courseIds,
+				referer,
+			}: {
+				siteHost: string;
+				headers: Record<string, string>;
+				transactionId: string;
+				searchDate: string;
+				courseIds: string;
+				referer: string;
+			}): Promise<BrowserFetchResult> => {
+				const timezoneOffset = String(new Date().getTimezoneOffset());
+				const timezoneId = Intl.DateTimeFormat().resolvedOptions().timeZone || "America/Chicago";
+				const requestHeaders = {
+					...headers,
+					Origin: siteHost,
+					Referer: referer,
+					"x-timezone-offset": timezoneOffset,
+					"x-timezoneid": timezoneId,
+					"x-requestid": crypto.randomUUID(),
+				};
+
+				const registerRes = await fetch(
+					`${siteHost}/onlineres/onlineapi/api/v1/onlinereservation/RegisterTransactionId`,
+					{
+						method: "POST",
+						headers: requestHeaders,
+						body: JSON.stringify({ transactionId }),
+						credentials: "same-origin",
+					}
+				);
+
+				const registerBody = await registerRes.text();
+				if (!registerRes.ok) {
+					return {
+						ok: false,
+						field: "transactionId",
+						status: registerRes.status,
+						bodyPreview: registerBody.slice(0, 500),
+					};
+				}
+
+				const params = new URLSearchParams({
+					searchDate,
+					holes: "0",
+					numberOfPlayer: "0",
+					courseIds,
+					searchTimeType: "0",
+					transactionId,
+					teeOffTimeMin: "0",
+					teeOffTimeMax: "23",
+					isChangeTeeOffTime: "true",
+					teeSheetSearchView: "5",
+					classCode: "R",
+					defaultOnlineRate: "N",
+					isUseCapacityPricing: "false",
+					memberStoreId: "1",
+					searchType: "1",
+				});
+
+				const teeTimesRes = await fetch(
+					`${siteHost}/onlineres/onlineapi/api/v1/onlinereservation/TeeTimes?${params}`,
+					{
+						method: "GET",
+						headers: requestHeaders,
+						credentials: "same-origin",
+					}
+				);
+
+				const teeTimesBody = await teeTimesRes.text();
+				if (!teeTimesRes.ok) {
+					return {
+						ok: false,
+						field: "apiResponse",
+						status: teeTimesRes.status,
+						bodyPreview: teeTimesBody.slice(0, 500),
+					};
+				}
+
+				try {
+					return { ok: true, json: JSON.parse(teeTimesBody) };
+				} catch {
+					return {
+						ok: false,
+						field: "apiResponse",
+						status: teeTimesRes.status,
+						bodyPreview: teeTimesBody.slice(0, 500),
+					};
+				}
+			},
+			{
+				siteHost,
+				headers,
+				transactionId,
+				searchDate,
+				courseIds,
+				referer: resolvedBookingLink,
+			}
+		);
+	} finally {
+		await page.close();
+	}
+
+	if (!browserResult.ok) {
+		throw new ParseError(`Club Prophet ${browserResult.field} request returned ${browserResult.status}`, {
 			courseName,
-			field: "apiResponse",
+			field: browserResult.field,
+			cause: browserResult.bodyPreview,
 		});
 	}
 
-	const json = await teeTimesRes.json();
+	const json = browserResult.json;
 	const result = ClubProphetResponseSchema.safeParse(json);
 
 	if (!result.success) {
