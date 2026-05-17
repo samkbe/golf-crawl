@@ -51,10 +51,13 @@ function makeHeaders(token: string, websiteId: string): Record<string, string> {
 		Authorization: `Bearer ${token}`,
 		"x-productid": "1",
 		"x-componentid": "1",
-		"x-siteid": "1",
+		"x-siteid": "2",
 		"x-terminalid": "3",
 		"x-websiteid": websiteId,
 		"x-requestid": crypto.randomUUID(),
+		"client-id": "onlineresweb",
+		"x-moduleid": "7",
+		"x-ismobile": "false",
 	};
 }
 
@@ -72,6 +75,7 @@ export default async function scrapeClubProphet(
 	});
 
 	if (!tokenRes.ok) {
+		console.error(await tokenRes.text());
 		throw new ParseError(`Club Prophet token endpoint returned ${tokenRes.status}`, {
 			courseName,
 			field: "token",
@@ -93,6 +97,8 @@ export default async function scrapeClubProphet(
 	const headers = makeHeaders(token, websiteId);
 	const transactionId = crypto.randomUUID();
 
+	console.log("Token:", token);
+	
 	const registerRes = await fetch(
 		`${siteHost}/onlineres/onlineapi/api/v1/onlinereservation/RegisterTransactionId`,
 		{
