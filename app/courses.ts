@@ -29,7 +29,7 @@ export const courses: course[] = [
 	{ title: "Crystal Falls", key: "crystalFalls", platform: "teeitup", fetchFunction: scrapeCrystalFalls },
 	{ title: "Shadowglen", key: "shadowGlen", platform: "teeitup", fetchFunction: scrapeShadowGlen },
 	{ title: "Harvey Penick", key: "harveyPenick", platform: "teeitup", fetchFunction: scrapeHarveyPenick },
-	{ title: "Falconhead", key: "falconhead", platform: "foreup", fetchFunction: scrapeFalconhead },
+	{ title: "Falconhead", key: "falconhead", platform: "golfback", fetchFunction: scrapeFalconhead },
 	{ title: "Avery Ranch", key: "averyRanch", platform: "golfback", fetchFunction: scrapeAveryRanch },
 	{ title: "Teravista", key: "teravista", platform: "golfback", fetchFunction: scrapeTeravista },
 	{ title: "Riverside", key: "riverside", platform: "foreup", fetchFunction: scrapeRiverside },
