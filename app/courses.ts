@@ -31,7 +31,7 @@ export const courses: course[] = [
 	{ title: "Harvey Penick", key: "harveyPenick", platform: "teeitup", fetchFunction: scrapeHarveyPenick },
 	{ title: "Falconhead", key: "falconhead", platform: "foreup", fetchFunction: scrapeFalconhead },
 	{ title: "Avery Ranch", key: "averyRanch", platform: "foreup", fetchFunction: scrapeAveryRanch },
-	{ title: "Teravista", key: "teravista", platform: "foreup", fetchFunction: scrapeTeravista },
+	{ title: "Teravista", key: "teravista", platform: "golfback", fetchFunction: scrapeTeravista },
 	{ title: "Riverside", key: "riverside", platform: "foreup", fetchFunction: scrapeRiverside },
 	{ title: "Colovista", key: "colovista", platform: "foreup", fetchFunction: scrapeColovista },
 	{ title: "Forest Creek", key: "forestCreek", platform: "chronogolf", fetchFunction: scrapeForestCreek },

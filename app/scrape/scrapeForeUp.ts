@@ -50,6 +50,8 @@ export default async function scrapeForeUp(
 	}
 
 	const json = await res.json();
+
+	console.log("JSON: ", json);
 	const result = ForeUpResponseSchema.safeParse(json);
 
 	if (!result.success) {
