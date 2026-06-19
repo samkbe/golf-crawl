@@ -27,10 +27,7 @@ const ClubProphetEntrySchema = z.object({
 
 const ClubProphetResponseSchema = z.object({
 	isSuccess: z.boolean(),
-	content: z.union([
-		z.array(ClubProphetEntrySchema),
-		z.object({ messageKey: z.string() }),
-	]),
+	content: z.union([z.array(ClubProphetEntrySchema), z.object({ messageKey: z.string() })]),
 });
 
 const TokenResponseSchema = z.object({
@@ -122,7 +119,7 @@ export default async function scrapeClubProphet(
 	const searchDate = toClubProphetDate(date);
 	const page = await browser.newPage();
 	let browserResult: BrowserFetchResult;
-
+ 
 	try {
 		await page.goto(resolvedBookingLink, {
 			waitUntil: "domcontentloaded",
@@ -149,7 +146,8 @@ export default async function scrapeClubProphet(
 				referer: string;
 			}): Promise<BrowserFetchResult> => {
 				const timezoneOffset = String(new Date().getTimezoneOffset());
-				const timezoneId = Intl.DateTimeFormat().resolvedOptions().timeZone || "America/Chicago";
+				const timezoneId =
+					Intl.DateTimeFormat().resolvedOptions().timeZone || "America/Chicago";
 				const requestHeaders = {
 					...headers,
 					Origin: siteHost,
@@ -241,11 +239,14 @@ export default async function scrapeClubProphet(
 	}
 
 	if (!browserResult.ok) {
-		throw new ParseError(`Club Prophet ${browserResult.field} request returned ${browserResult.status}`, {
-			courseName,
-			field: browserResult.field,
-			cause: browserResult.bodyPreview,
-		});
+		throw new ParseError(
+			`Club Prophet ${browserResult.field} request returned ${browserResult.status}`,
+			{
+				courseName,
+				field: browserResult.field,
+				cause: browserResult.bodyPreview,
+			}
+		);
 	}
 
 	const json = browserResult.json;
@@ -273,9 +274,10 @@ export default async function scrapeClubProphet(
 		teeTimes.push({
 			date: teeTimeDate,
 			courseName,
-			openSlots: entry.minPlayer === entry.maxPlayer
-			? String(entry.minPlayer)
-			: `${entry.minPlayer}-${entry.maxPlayer}`,
+			openSlots:
+				entry.minPlayer === entry.maxPlayer
+					? String(entry.minPlayer)
+					: `${entry.minPlayer}-${entry.maxPlayer}`,
 			price,
 			bookingLink,
 		});

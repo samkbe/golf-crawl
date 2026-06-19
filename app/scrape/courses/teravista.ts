@@ -1,4 +1,4 @@
-import scrapeForeUp from "@/app/scrape/scrapeForeUp";
+import scrapeGolfBack from "@/app/scrape/scrapeGolfBack";
 import { captureError } from "@/app/lib/logger";
 import { ScrapeError } from "@/app/errors";
 import { cacheGet, cacheSet, reviveTeeTimes } from "@/app/cache";
@@ -10,12 +10,11 @@ export async function scrapeTeravista(date: string) {
 	if (cached) return reviveTeeTimes(cached);
 
 	try {
-		const result = await scrapeForeUp(
+		const result = await scrapeGolfBack(
 			date,
-			"10176",
-			"14332",
+			"609b3b52-0b5f-4cd5-a68b-9fdfcb7c6676",
 			"Teravista",
-			"https://foreupsoftware.com/index.php/booking/23033/10176#/teetimes"
+			"https://www.teravistagolf.com/teetimes/"
 		);
 		await cacheSet(cacheKey, result);
 		return result;
@@ -23,7 +22,7 @@ export async function scrapeTeravista(date: string) {
 		const wrapped = new ScrapeError("Failed to scrape Teravista", {
 			courseName: "Teravista",
 			scrapeDate: date,
-			scraperType: "foreup",
+			scraperType: "golfback",
 			cause: error,
 		});
 		captureError(wrapped);
