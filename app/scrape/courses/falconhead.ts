@@ -1,4 +1,4 @@
-import scrapeForeUp from "@/app/scrape/scrapeForeUp";
+import scrapeGolfBack from "@/app/scrape/scrapeGolfBack";
 import { captureError } from "@/app/lib/logger";
 import { ScrapeError } from "@/app/errors";
 import { cacheGet, cacheSet, reviveTeeTimes } from "@/app/cache";
@@ -10,12 +10,11 @@ export async function scrapeFalconhead(date: string) {
 	if (cached) return reviveTeeTimes(cached);
 
 	try {
-		const result = await scrapeForeUp(
+		const result = await scrapeGolfBack(
 			date,
-			"10177",
-			"14336",
+			"7a0c7c4d-0282-4524-b863-feab909fec10",
 			"Falconhead",
-			"https://foreupsoftware.com/index.php/booking/23031/10177#/teetimes"
+			`https://golfback.com/#/course/7a0c7c4d-0282-4524-b863-feab909fec10/date/${date}`
 		);
 		await cacheSet(cacheKey, result);
 		return result;
@@ -23,7 +22,7 @@ export async function scrapeFalconhead(date: string) {
 		const wrapped = new ScrapeError("Failed to scrape Falconhead", {
 			courseName: "Falconhead",
 			scrapeDate: date,
-			scraperType: "foreup",
+			scraperType: "golfback",
 			cause: error,
 		});
 		captureError(wrapped);

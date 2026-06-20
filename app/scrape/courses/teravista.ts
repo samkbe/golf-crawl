@@ -14,7 +14,7 @@ export async function scrapeTeravista(date: string) {
 			date,
 			"609b3b52-0b5f-4cd5-a68b-9fdfcb7c6676",
 			"Teravista",
-			"https://www.teravistagolf.com/teetimes/"
+			`https://golfback.com/#/course/609b3b52-0b5f-4cd5-a68b-9fdfcb7c6676/date/${date}`
 		);
 		await cacheSet(cacheKey, result);
 		return result;

@@ -1,4 +1,4 @@
-import scrapeForeUp from "@/app/scrape/scrapeForeUp";
+import scrapeGolfBack from "@/app/scrape/scrapeGolfBack";
 import { captureError } from "@/app/lib/logger";
 import { ScrapeError } from "@/app/errors";
 import { cacheGet, cacheSet, reviveTeeTimes } from "@/app/cache";
@@ -10,12 +10,11 @@ export async function scrapeAveryRanch(date: string) {
 	if (cached) return reviveTeeTimes(cached);
 
 	try {
-		const result = await scrapeForeUp(
+		const result = await scrapeGolfBack(
 			date,
-			"10175",
-			"14268",
+			"f06840ec-1229-4d06-b1d9-435573939990",
 			"Avery Ranch",
-			"https://foreupsoftware.com/index.php/booking/23032/10175#/teetimes"
+			`https://golfback.com/#/course/f06840ec-1229-4d06-b1d9-435573939990/date/${date}`
 		);
 		await cacheSet(cacheKey, result);
 		return result;
@@ -23,7 +22,7 @@ export async function scrapeAveryRanch(date: string) {
 		const wrapped = new ScrapeError("Failed to scrape Avery Ranch", {
 			courseName: "Avery Ranch",
 			scrapeDate: date,
-			scraperType: "foreup",
+			scraperType: "golfback",
 			cause: error,
 		});
 		captureError(wrapped);
