@@ -14,7 +14,7 @@ export async function scrapeFalconhead(date: string) {
 			date,
 			"7a0c7c4d-0282-4524-b863-feab909fec10",
 			"Falconhead",
-			"https://www.falconheadaustin.com/teetimes/"
+			`https://golfback.com/#/course/7a0c7c4d-0282-4524-b863-feab909fec10/date/${date}`
 		);
 		await cacheSet(cacheKey, result);
 		return result;
