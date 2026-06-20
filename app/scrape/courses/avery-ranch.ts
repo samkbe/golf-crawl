@@ -14,7 +14,7 @@ export async function scrapeAveryRanch(date: string) {
 			date,
 			"f06840ec-1229-4d06-b1d9-435573939990",
 			"Avery Ranch",
-			"https://www.averyranchgolf.com/teetimes/"
+			`https://golfback.com/#/course/f06840ec-1229-4d06-b1d9-435573939990/date/${date}`
 		);
 		await cacheSet(cacheKey, result);
 		return result;
