@@ -11,6 +11,16 @@ const TZ = "America/Chicago";
 const PLAYER_COUNTS = [4, 3, 2, 1] as const;
 const DELAY_MS = 750;
 
+// A request with no User-Agent is an obvious bot signal to ChronoGolf's WAF.
+// Sending browser-like headers significantly reduces 403 blocks.
+const BROWSER_HEADERS = {
+	"User-Agent":
+		"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
+	Accept: "application/json, text/plain, */*",
+	"Accept-Language": "en-US,en;q=0.9",
+	Referer: "https://www.chronogolf.com/",
+};
+
 const GreenFeeSchema = z.object({
 	green_fee: z.number(),
 	subtotal: z.number(),
@@ -58,7 +68,7 @@ export default async function scrapeChronoGolf(
 		const params = buildParams(date, courseId, affiliationTypeId, playerCount);
 
 		const dispatcher = getDecodoProxyDispatcherOnPort(getRandomProxyPort());
-		const requestInit: RequestInit & { dispatcher?: Dispatcher } = {};
+		const requestInit: RequestInit & { dispatcher?: Dispatcher } = { headers: BROWSER_HEADERS };
 		if (dispatcher) requestInit.dispatcher = dispatcher;
 
 		const res = await fetch(
