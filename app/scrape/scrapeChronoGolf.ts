@@ -10,6 +10,8 @@ const API_BASE = "https://www.chronogolf.com/marketplace/clubs";
 const TZ = "America/Chicago";
 const PLAYER_COUNTS = [4, 3, 2, 1] as const;
 const DELAY_MS = 750;
+const MAX_ATTEMPTS = 4;
+const BASE_BACKOFF_MS = 1000;
 
 // A request with no User-Agent is an obvious bot signal to ChronoGolf's WAF.
 // Sending browser-like headers significantly reduces 403 blocks.
@@ -49,6 +51,50 @@ function buildParams(date: string, courseId: string, affiliationTypeId: string, 
 	return params;
 }
 
+async function fetchTeeTimesJson(url: string, courseName: string): Promise<unknown> {
+	let lastError: unknown;
+
+	for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+		// Fresh proxy IP on every attempt.
+		const dispatcher = getDecodoProxyDispatcherOnPort(getRandomProxyPort());
+		const requestInit: RequestInit & { dispatcher?: Dispatcher } = { headers: BROWSER_HEADERS };
+		if (dispatcher) requestInit.dispatcher = dispatcher;
+
+		try {
+			const res = await fetch(url, requestInit as RequestInit);
+
+			// Retryable: WAF/rate-limit/transient → rotate IP and try again.
+			if (res.status === 403 || res.status === 429 || res.status === 503) {
+				throw new Error(`ChronoGolf returned ${res.status}`);
+			}
+			// Other non-OK (e.g. 400/404) won't fix on retry.
+			if (!res.ok) {
+				throw new ParseError(`ChronoGolf API returned ${res.status}`, {
+					courseName,
+					field: "apiResponse",
+				});
+			}
+
+			return await res.json();
+		} catch (error) {
+			lastError = error;
+			// Genuine 4xx (ParseError) is not worth retrying.
+			if (error instanceof ParseError) throw error;
+
+			if (attempt < MAX_ATTEMPTS) {
+				const backoff = BASE_BACKOFF_MS * 2 ** (attempt - 1) + Math.floor(Math.random() * 400);
+				await delay(backoff);
+			}
+		}
+	}
+
+	throw new ParseError(`ChronoGolf API blocked after ${MAX_ATTEMPTS} attempts`, {
+		courseName,
+		field: "apiResponse",
+		cause: lastError instanceof Error ? lastError : undefined,
+	});
+}
+
 export default async function scrapeChronoGolf(
 	date: string,
 	clubId: string,
@@ -67,26 +113,14 @@ export default async function scrapeChronoGolf(
 		const playerCount = PLAYER_COUNTS[i];
 		const params = buildParams(date, courseId, affiliationTypeId, playerCount);
 
-		const dispatcher = getDecodoProxyDispatcherOnPort(getRandomProxyPort());
-		const requestInit: RequestInit & { dispatcher?: Dispatcher } = { headers: BROWSER_HEADERS };
-		if (dispatcher) requestInit.dispatcher = dispatcher;
-
-		const res = await fetch(
-			`${API_BASE}/${clubId}/teetimes?${params}`,
-			requestInit as RequestInit
-		);
-
-		if (!res.ok) {
-			if (i === 0) {
-				throw new ParseError(`ChronoGolf API returned ${res.status}`, {
-					courseName,
-					field: "apiResponse",
-				});
-			}
+		let json: unknown;
+		try {
+			json = await fetchTeeTimesJson(`${API_BASE}/${clubId}/teetimes?${params}`, courseName);
+		} catch (error) {
+			if (i === 0) throw error;
 			continue;
 		}
 
-		const json = await res.json();
 		const result = ChronoResponseSchema.safeParse(json);
 
 		if (!result.success) {
