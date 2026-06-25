@@ -13,7 +13,8 @@ const PLAYER_COUNTS = [4, 3, 2, 1] as const;
 const DELAY_MS = 750;
 const MAX_ATTEMPTS = 4;
 const BASE_BACKOFF_MS = 1000;
-const DEBUG_CHRONOGOLF = process.env.CHRONOGOLF_DEBUG === "1";
+const DEBUG_CHRONOGOLF =
+	process.env.CHRONOGOLF_DEBUG === "1" || process.env.CHRONOGOLF_DEBUG?.toLowerCase() === "true";
 
 // A request with no User-Agent is an obvious bot signal to ChronoGolf's WAF.
 // Sending browser-like headers significantly reduces 403 blocks.
@@ -43,6 +44,7 @@ const delay = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 function logChronoDebug(message: string, context: Record<string, unknown>) {
 	if (!DEBUG_CHRONOGOLF) return;
+	console.info("[ChronoGolf Debug]", message, context);
 	captureMessage(message, { scraperType: "chronogolf", ...context }, "info");
 }
 
