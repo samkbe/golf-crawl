@@ -1,9 +1,10 @@
 import "server-only";
 import { z } from "zod";
 import { fromZonedTime } from "date-fns-tz";
-import type { Dispatcher } from "undici";
+import { fetch as undiciFetch, type Dispatcher, type RequestInit as UndiciRequestInit } from "undici";
 import type { TeeTime } from "@/app/types";
 import { ParseError } from "@/app/errors";
+import { captureMessage } from "@/app/lib/logger";
 import { getDecodoProxyDispatcherOnPort, getRandomProxyPort } from "@/app/scrape/proxy";
 
 const API_BASE = "https://www.chronogolf.com/marketplace/clubs";
@@ -12,6 +13,7 @@ const PLAYER_COUNTS = [4, 3, 2, 1] as const;
 const DELAY_MS = 750;
 const MAX_ATTEMPTS = 4;
 const BASE_BACKOFF_MS = 1000;
+const DEBUG_CHRONOGOLF = process.env.CHRONOGOLF_DEBUG === "1";
 
 // A request with no User-Agent is an obvious bot signal to ChronoGolf's WAF.
 // Sending browser-like headers significantly reduces 403 blocks.
@@ -39,6 +41,11 @@ const ChronoResponseSchema = z.array(ChronoEntrySchema);
 
 const delay = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
+function logChronoDebug(message: string, context: Record<string, unknown>) {
+	if (!DEBUG_CHRONOGOLF) return;
+	captureMessage(message, { scraperType: "chronogolf", ...context }, "info");
+}
+
 function buildParams(date: string, courseId: string, affiliationTypeId: string, playerCount: number) {
 	const params = new URLSearchParams({
 		date,
@@ -56,19 +63,49 @@ async function fetchTeeTimesJson(url: string, courseName: string): Promise<unkno
 
 	for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
 		// Fresh proxy IP on every attempt.
-		const dispatcher = getDecodoProxyDispatcherOnPort(getRandomProxyPort());
-		const requestInit: RequestInit & { dispatcher?: Dispatcher } = { headers: BROWSER_HEADERS };
+		const proxyPort = getRandomProxyPort();
+		const dispatcher = getDecodoProxyDispatcherOnPort(proxyPort);
+		const requestInit: UndiciRequestInit & { dispatcher?: Dispatcher } = { headers: BROWSER_HEADERS };
 		if (dispatcher) requestInit.dispatcher = dispatcher;
 
 		try {
-			const res = await fetch(url, requestInit as RequestInit);
+			logChronoDebug("ChronoGolf request attempt", {
+				courseName,
+				attempt,
+				proxyConfigured: Boolean(dispatcher),
+				proxyPort,
+			});
+
+			const res = await undiciFetch(url, requestInit);
 
 			// Retryable: WAF/rate-limit/transient → rotate IP and try again.
 			if (res.status === 403 || res.status === 429 || res.status === 503) {
+				const bodySnippet = (await res.text()).slice(0, 240);
+				logChronoDebug("ChronoGolf retryable block", {
+					courseName,
+					attempt,
+					status: res.status,
+					proxyConfigured: Boolean(dispatcher),
+					proxyPort,
+					cfRay: res.headers.get("cf-ray"),
+					server: res.headers.get("server"),
+					bodySnippet,
+				});
 				throw new Error(`ChronoGolf returned ${res.status}`);
 			}
 			// Other non-OK (e.g. 400/404) won't fix on retry.
 			if (!res.ok) {
+				const bodySnippet = (await res.text()).slice(0, 240);
+				logChronoDebug("ChronoGolf non-retryable response", {
+					courseName,
+					attempt,
+					status: res.status,
+					proxyConfigured: Boolean(dispatcher),
+					proxyPort,
+					cfRay: res.headers.get("cf-ray"),
+					server: res.headers.get("server"),
+					bodySnippet,
+				});
 				throw new ParseError(`ChronoGolf API returned ${res.status}`, {
 					courseName,
 					field: "apiResponse",
@@ -78,6 +115,13 @@ async function fetchTeeTimesJson(url: string, courseName: string): Promise<unkno
 			return await res.json();
 		} catch (error) {
 			lastError = error;
+			logChronoDebug("ChronoGolf attempt failed", {
+				courseName,
+				attempt,
+				proxyConfigured: Boolean(dispatcher),
+				proxyPort,
+				errorMessage: error instanceof Error ? error.message : String(error),
+			});
 			// Genuine 4xx (ParseError) is not worth retrying.
 			if (error instanceof ParseError) throw error;
 
