@@ -61,6 +61,7 @@ async function scrapeGolfAtx(targetDate: string, browser: Browser) {
 		const totalPages = (
 			await page.$$(`[data-click-set-value]:not([data-icon-secondary='ui-icon-seek-end'])`)
 		).length;
+		
 
 		let hasNextPage = totalPages > 0;
 		let pageNumber = 1;
@@ -99,22 +100,35 @@ async function scrapeGolfAtx(targetDate: string, browser: Browser) {
 				const teeTimeRows = await courseElement.$$("tbody tr");
 
 				for (const row of teeTimeRows) {
-					// Extract each cell's data for the tee time
-					let day = await row.$eval('td[data-title="Date"]', (el) => el.textContent);
+					// Each cell is prefixed with a hidden <span class="mobile-column-header"> label
+					const cells: Record<string, string> = await row.$$eval("td", (tds) =>
+						Object.fromEntries(
+							tds.map((td) => {
+								const header = td.querySelector(".mobile-column-header");
+								const label = header?.textContent?.trim() ?? "";
+								const value = Array.from(td.childNodes)
+									.filter((node) => node !== header)
+									.map((node) => node.textContent ?? "")
+									.join("")
+									.trim();
+								return [label, value];
+							})
+						)
+					);
+
+					const day = cells["Date"];
 					if (!day)
 						throw new ParseError("Couldn't scrape date value", {
 							courseName,
 							field: "date",
 						});
-					day = day.trim();
 
-					let time = await row.$eval('td[data-title="Time"]', (el) => el.textContent);
+					const time = cells["Time"];
 					if (!time)
 						throw new ParseError("Couldn't scrape time value", {
 							courseName,
 							field: "time",
 						});
-					time = time.trim();
 
 					const [mm, dd, yyyy] = day.split("/");
 					const date = mergeDateWithTime(`${yyyy}-${mm}-${dd}`, time);
@@ -126,10 +140,7 @@ async function scrapeGolfAtx(targetDate: string, browser: Browser) {
 						});
 					}
 
-					const openSlots = await row.$eval(
-						'td[data-title="Open Slots"]',
-						(el) => el.textContent?.trim() || ""
-					);
+					const openSlots = cells["Open Slots"] ?? "";
 
 					teeTimes.push({
 						date,
