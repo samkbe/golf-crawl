@@ -5,9 +5,9 @@ A [Next.js](https://nextjs.org) app that aggregates golf tee times from ~19 Aust
 ## How it works
 
 1. The user picks a date and selects courses on `app/page.tsx`.
-2. The `fetchTeeTimes` Server Action (`app/actions.ts`) launches a single Puppeteer browser, groups the selected courses by platform, and runs each platform group **in parallel** while **serializing courses within a group** (1.5s delay) to avoid rate limits.
+2. The `POST /api/tee-times` route (`app/api/tee-times/route.ts`) launches a single Puppeteer browser, groups the selected courses by platform, and runs each platform group **in parallel** while **serializing courses within a group** (1.5s delay) to avoid rate limits. It streams newline-delimited JSON, emitting one event per course as it finishes, then a final `complete` event.
 3. Each course calls its per-course module in `app/scrape/courses/`, which first checks the Redis cache and only scrapes on a miss.
-4. Results render in a sortable/filterable table (`app/components/teeTimeTable.tsx`).
+4. `useTeeTimeStream` (`app/hooks/useTeeTimeStream.ts`) reads the stream, and results render as they arrive in a per-course progress strip (`app/components/courseProgress.tsx`) and a sortable/filterable table (`app/components/teeTimeTable.tsx`).
 
 There is no database and no REST API in the Next.js app — data flows entirely through the Server Action and the cache.
 

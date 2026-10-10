@@ -1,8 +1,10 @@
-export type FetchTeeTimesState = {
-	teeTimes: TeeTime[];
-	error: string;
-	isLoading: boolean;
-};
+export type CourseStatus = "loading" | "done" | "failed";
+
+export type TeeTimeStreamEvent =
+	| { type: "course"; key: string; status: "done"; teeTimes: TeeTime[] }
+	| { type: "course"; key: string; status: "failed" }
+	| { type: "complete" }
+	| { type: "fatal"; error: string };
 
 export interface TeeTime {
 	date: Date;
@@ -11,6 +13,7 @@ export interface TeeTime {
 	bookingLink?: string;
 	price?: number;
 	golfAtxKey?: string;
+	courseKey?: string;
 }
 
 export type Platform =

@@ -1,9 +1,9 @@
 "use client";
 import Image from "next/image";
-import { fetchTeeTimes } from "@/app/actions";
-import { useActionState, useEffect } from "react";
-import { useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { TeeTimeTable } from "@/app/components/teeTimeTable";
+import { CourseProgress } from "@/app/components/courseProgress";
+import { useTeeTimeStream } from "@/app/hooks/useTeeTimeStream";
 import logo from "@/app/logo.png";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
@@ -43,29 +43,50 @@ const courses = [
 ];
 
 export default function Home() {
-	const [state, formAction, pending] = useActionState(fetchTeeTimes, {
-		teeTimes: [],
-		error: "",
-		isLoading: false,
-	});
+	const { teeTimes, statuses, counts, pending, error, start } = useTeeTimeStream();
 
 	const [date, setDate] = useState<Date>();
 	const [hasSubmitted, setHasSubmitted] = useState(false);
-	const [selectedCourseNames, setSelectedCourseNames] = useState<string[]>([]);
 	const [openSteps, setOpenSteps] = useState<string[]>(["date"]);
 	const [checkedKeys, setCheckedKeys] = useState<Set<string>>(new Set());
+	const [hiddenCourseKeys, setHiddenCourseKeys] = useState<Set<string>>(new Set());
 
 	const selectedCount = checkedKeys.size;
 
+	const visibleTeeTimes = useMemo(
+		() => teeTimes.filter((t) => !t.courseKey || !hiddenCourseKeys.has(t.courseKey)),
+		[teeTimes, hiddenCourseKeys]
+	);
+
+	function toggleCourseVisibility(key: string) {
+		setHiddenCourseKeys((prev) => {
+			const next = new Set(prev);
+			if (next.has(key)) next.delete(key);
+			else next.add(key);
+			return next;
+		});
+	}
+
+	const wasPending = useRef(false);
 	useEffect(() => {
-		if (state.error) {
-			if (state.teeTimes.length > 0) {
-				toast.warning(state.error);
-			} else {
-				toast.error(state.error);
-			}
+		const justFinished = wasPending.current && !pending;
+		wasPending.current = pending;
+		if (!justFinished) return;
+
+		const failedTitles = courses
+			.filter((c) => statuses[c.key] === "failed")
+			.map((c) => c.title);
+
+		if (error) {
+			toast.error(error);
+		} else if (teeTimes.length === 0 && failedTitles.length > 0) {
+			toast.error(`Failed to fetch tee times for: ${failedTitles.join(", ")}`);
+		} else if (teeTimes.length === 0) {
+			toast.error("No tee times found for the selected courses");
+		} else if (failedTitles.length > 0) {
+			toast.warning(`Could not load: ${failedTitles.join(", ")}`);
 		}
-	}, [state.error, state.teeTimes]);
+	}, [pending, error, statuses, teeTimes.length]);
 
 	function handleCheckChange(key: string, checked: boolean) {
 		setCheckedKeys((prev) => {
@@ -88,14 +109,24 @@ export default function Home() {
 			</div>
 			<div className="flex flex-col md:flex-row md:gap-4 md:items-start">
 				<form
-					action={formAction}
 					onSubmit={(e) => {
-						setHasSubmitted(true);
+						e.preventDefault();
 						const formData = new FormData(e.currentTarget);
+						const dateValue = formData.get("date");
 						const selectedKeys = formData.getAll("courses") as string[];
-						setSelectedCourseNames(
-							courses.filter((c) => selectedKeys.includes(c.key)).map((c) => c.title)
-						);
+
+						if (typeof dateValue !== "string" || !dateValue) {
+							toast.error("Date is required");
+							return;
+						}
+						if (selectedKeys.length === 0) {
+							toast.error("Select at least one course");
+							return;
+						}
+
+						setHasSubmitted(true);
+						setHiddenCourseKeys(new Set());
+						start(dateValue, selectedKeys);
 					}}
 					className="w-full md:w-1/4 md:min-w-[280px] shrink-0 rounded-lg p-4 bg-white/50 backdrop-blur-md text-md"
 				>
@@ -194,10 +225,17 @@ export default function Home() {
 				<div className="w-full md:w-3/4 mt-4 md:mt-0">
 					{hasSubmitted ? (
 						<ErrorBoundary>
-							<TeeTimeTable
-								data={state.teeTimes}
+							<CourseProgress
+								courses={courses}
+								statuses={statuses}
+								counts={counts}
 								pending={pending}
-								courseNames={selectedCourseNames}
+								hiddenKeys={hiddenCourseKeys}
+								onToggle={toggleCourseVisibility}
+							/>
+							<TeeTimeTable
+								data={visibleTeeTimes}
+								pending={pending && teeTimes.length === 0}
 							/>
 						</ErrorBoundary>
 					) : (
