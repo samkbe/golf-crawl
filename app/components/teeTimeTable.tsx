@@ -8,9 +8,8 @@ import {
 	getFilteredRowModel,
 	Row,
 } from "@tanstack/react-table";
-import { useState, useEffect } from "react";
-import { ArrowUpIcon, ArrowDownIcon } from "lucide-react";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { useState } from "react";
+import { ArrowUpIcon, ArrowDownIcon, Loader2Icon } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
 
 import { Label } from "@/components/ui/label";
@@ -22,10 +21,6 @@ const columnHelper = createColumnHelper<TeeTime>();
 const columns = [
 	columnHelper.accessor("courseName", {
 		header: "Course",
-		filterFn: (row: Row<TeeTime>, columnId: string, filterValue: string[]) => {
-			if (!Array.isArray(filterValue)) return true;
-			return filterValue.includes(row.getValue(columnId));
-		},
 	}),
 	columnHelper.accessor("date", {
 		header: "Date",
@@ -84,14 +79,10 @@ const columns = [
 export function TeeTimeTable({
 	data,
 	pending,
-	courseNames,
 }: {
 	data: TeeTime[];
 	pending: boolean;
-	courseNames: string[];
 }) {
-	const [allCourseNames, setAllCourseNames] = useState<string[]>([]);
-	const [activeCourses, setActiveCourses] = useState<string[]>([]);
 	const [sorting, setSorting] = useState<SortingState>([{ id: "date", desc: false }]);
 	const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
 	const [priceRange, setPriceRange] = useState<[number, number]>([0, 300]);
@@ -99,21 +90,6 @@ export function TeeTimeTable({
 	const TIME_MAX = 21 * 60;
 	const [timeRange, setTimeRange] = useState<[number, number]>([TIME_MIN, TIME_MAX]);
 	const [openSlotsRange, setOpenSlotsRange] = useState<[number, number]>([1, 4]);
-
-	useEffect(() => {
-		const unique = [...new Set(data.map((t) => t.courseName))];
-		setAllCourseNames(unique);
-		setActiveCourses(unique);
-		setColumnFilters([{ id: "courseName", value: unique }]);
-	}, [data]);
-
-	function handleCourseToggle(values: string[]) {
-		setActiveCourses(values);
-		setColumnFilters((prev) => {
-			const others = prev.filter((f) => f.id !== "courseName");
-			return [...others, { id: "courseName", value: values }];
-		});
-	}
 
 	function updatePriceFilter(range: [number, number]) {
 		setPriceRange(range);
@@ -158,35 +134,10 @@ export function TeeTimeTable({
 	return (
 		<>
 			{pending ? (
-				<div className="rounded-md p-4 bg-white/50 backdrop-blur-md animate-pulse-scale min-h-80 flex flex-col justify-center items-center gap-2">
-					<h2 className="text-center font-bold">
-						Loading Course Data. This may take a bit.
-					</h2>
-					<p className="text-center text-sm text-gray-600">
-						Fetching: {courseNames.join(", ")}
-					</p>
-				</div>
+				<TableSkeleton />
 			) : (
 				<>
 					<div className="rounded-md mb-4 w-full p-4 bg-white/50 backdrop-blur-md">
-						<h2 className="font-bold">Courses:</h2>
-						<ToggleGroup
-							type="multiple"
-							variant="outline"
-							value={activeCourses}
-							onValueChange={handleCourseToggle}
-							className="flex flex-wrap gap-2 my-4 justify-start"
-						>
-							{allCourseNames.map((course) => (
-								<ToggleGroupItem
-									key={course}
-									value={course}
-									className="rounded-xl px-4 py-2 font-bold data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
-								>
-									{course}
-								</ToggleGroupItem>
-							))}
-						</ToggleGroup>
 					<div>
 						<h2 className="font-bold">Filters:</h2>
 						<div className="flex flex-col sm:flex-row gap-6 mt-2">
@@ -281,6 +232,56 @@ export function TeeTimeTable({
 				</>
 			)}
 		</>
+	);
+}
+
+const SKELETON_HEADERS = ["Course", "Date", "Open Slots", "Price", "Booking Link"];
+const SKELETON_ROWS = 8;
+const SKELETON_WIDTHS = [
+	["w-32", "w-36", "w-8", "w-10"],
+	["w-40", "w-32", "w-6", "w-12"],
+	["w-28", "w-36", "w-10", "w-10"],
+	["w-36", "w-28", "w-8", "w-8"],
+];
+
+function TableSkeleton() {
+	return (
+		<div role="status" aria-live="polite">
+			<div className="flex items-center gap-2 mb-3 px-1 text-sm font-medium text-gray-700">
+				<Loader2Icon className="size-4 animate-spin text-primary" />
+				<span>Loading course data</span>
+			</div>
+			<div className="overflow-x-auto border rounded-md w-full bg-white/50 backdrop-blur-md">
+				<table className="min-w-full text-sm text-left border-collapse">
+					<thead className="bg-gray-200">
+						<tr>
+							{SKELETON_HEADERS.map((header) => (
+								<th key={header} className="p-2 text-gray-500">
+									{header}
+								</th>
+							))}
+						</tr>
+					</thead>
+					<tbody className="animate-pulse">
+						{Array.from({ length: SKELETON_ROWS }, (_, i) => {
+							const widths = SKELETON_WIDTHS[i % SKELETON_WIDTHS.length];
+							return (
+								<tr key={i} className="border-t">
+									{widths.map((width, j) => (
+										<td key={j} className="p-2">
+											<div className={`h-4 rounded bg-gray-300/70 ${width}`} />
+										</td>
+									))}
+									<td className="p-2">
+										<div className="h-8 w-14 rounded-md bg-gray-300/70" />
+									</td>
+								</tr>
+							);
+						})}
+					</tbody>
+				</table>
+			</div>
+		</div>
 	);
 }
 
