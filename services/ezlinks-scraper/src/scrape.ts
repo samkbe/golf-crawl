@@ -175,20 +175,24 @@ async function runScrape(
 	};
 
 	let onResponse: ((response: any) => void) | undefined;
+	let readyTimer: NodeJS.Timeout | undefined;
 	const pageReadyPromise = new Promise<void>((resolve, reject) => {
-		const timeout = setTimeout(
+		readyTimer = setTimeout(
 			() => reject(new Error(`Timed out waiting for EzLinks page to load for ${courseName}`)),
 			READY_TIMEOUT_MS
 		);
 
 		onResponse = (response: any) => {
 			if (response.url().includes("/api/search/search")) {
-				clearTimeout(timeout);
+				clearTimeout(readyTimer);
 				resolve();
 			}
 		};
 		page.on("response", onResponse);
 	});
+	// May reject while page.goto is still pending, before it's awaited; without a
+	// handler attached Node treats that as an unhandled rejection and exits.
+	pageReadyPromise.catch(() => {});
 
 	page.on("request", onRequest);
 
@@ -295,6 +299,7 @@ async function runScrape(
 
 		return teeTimes;
 	} finally {
+		clearTimeout(readyTimer);
 		page.off("request", onRequest);
 		if (onResponse) page.off("response", onResponse);
 	}
