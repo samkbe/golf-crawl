@@ -84,6 +84,10 @@ app.post("/scrape-chronogolf", async (c) => {
 	}
 });
 
+process.on("unhandledRejection", (reason) => {
+	console.error("Unhandled rejection:", reason);
+});
+
 const port = parseInt(process.env.PORT || "3001", 10);
 
 serve({ fetch: app.fetch, port }, (info) => {
